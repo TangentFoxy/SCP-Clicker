@@ -1,3 +1,4 @@
 *.lua
 !src/lib/*
 !src/lib/gooi/*
+!src/main.lua
