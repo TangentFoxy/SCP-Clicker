@@ -1,0 +1,3 @@
+*.lua
+!src/lib/*
+!src/lib/gooi/*
