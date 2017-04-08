@@ -4,20 +4,20 @@ local items
 items = {
   {
     name: "The Broken Desert" -- a nickname used in conjunction with ID
-    chance: 0.002 -- how likely the object is to be discovered (default 1% if not specified)
-    danger: 0.01 -- between 0 and 1
+    chance: 0.002  -- how likely the object is to be discovered (default 1% if not specified)
+    danger: 0      -- between 0 and 1
     multiple: true -- can be discovered multiple times
-    found: { -- reports for initial discovery
-      "In ${state}, a small glass pyramid containing sand was recovered. The sand shows evidence of a dust storm, and material appears to blow in and out of the terrain within."
-      "On the coast of ${country}, a trigular structure containing what appears to be a desert was discovered. Within the structure, there is a scorpian that appears healthy."
+    found: {       -- reports for initial discovery
+      "In ${state}, a small glass pyramid containing sand was recovered. The sand shows evidence of a dust storm, and material appears to blow in and out of the terrain within.": {}
+      "On the coast of ${country}, a trigular structure containing what appears to be a desert was discovered. Within the structure, there is a scorpian that appears healthy.": {}
       "Within ${region}, ${small_int} small glass pyramids were discovered. Each contains sand and features consistent with a desert. They seem to be unaffected by the outside world.": {count: "${small_int}"}
     }
     found_again: { -- appended to report when found again
-      "This appears to be another instance of ${id}."
-      "Definitely another piece of the broken desert."
-      "Don't we have a room full of these already?"
-      "Part of ${id}."
-      "An instance of ${id}. I suggest we start keeping these at multiple sites."
+      "This appears to be another instance of ${id}.": {}
+      "Definitely another piece of the broken desert.": {}
+      "Don't we have a room full of these already?": {requires: {count: 8}}
+      "Part of ${id}.": {requires: {count: 2}}
+      "An instance of ${id}. I suggest we start keeping these at multiple sites.": {requires: {count: 12}}
     }
     research_minor: {
       -- anomalous properities discovered while in containment during basic research
@@ -29,12 +29,12 @@ items = {
     breach: { -- report when it breaches containment
       "A member of the cleaning staff dropped an instance of ${id}. The sand within spilled into the storage room.": {
         requires: {count: 2}
-        damage: 0.01
+        damage: 0
         resolve_time: 0
       }
       "The object was broken by a member of cleaning staff. They have since been retired. A cactus was recovered from the object and is being studied.": {
         requires: {exact_count: 1}
-        damage: 0.01
+        damage: 0
         resolve_time: 0
       }
     }

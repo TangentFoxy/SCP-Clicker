@@ -1,9 +1,7 @@
 math.randomseed(os.time())
 require "lib.gooi" -- fuck you module creator, this is bad design
 
-for key, value in pairs(gooi) do
-  print(key, value)
-end
+local data = require "data"
 
 function love.load()
   love.graphics.setBackgroundColor(255, 255, 255, 255)
@@ -30,6 +28,7 @@ function love.load()
   )
   --]]
 
+  --[[
   text = gooi.newText("Last Button")
   text:setText(tostring(text.w))
 
@@ -52,19 +51,11 @@ function love.load()
 		gooi.newCheck("Check 1"),
 		gooi.newCheck("Large Check")
 	)
+  --]]
 end
 
-function love.update(dt)
-  gooi.update(dt)
-end
-
-function love.draw()
-  gooi.draw()
-
-  --temporary
-  love.graphics.setColor(255, 0, 0, 255)
-  love.graphics.line(text.x + 9, text.y + 9, text.x + text.w - 9, text.y + text.h - 9)
-end
+function love.update(dt) gooi.update(dt) end
+function love.draw() gooi.draw() end
 
 function love.mousepressed() gooi.pressed() end
 function love.mousereleased() gooi.released() end
@@ -73,15 +64,5 @@ function love.touchpressed(id, x, y) gooi.pressed(id, x, y) end
 function love.touchreleased(id, x, y) gooi.released(id, x, y) end
 function love.touchmoved(id, x, y) gooi.moved(id, x, y) end
 
--- temporary, for debug purposes
-function love.keypressed(key)
-  if not gooi.keypressed(key) then
-    if key == "escape" then
-      love.event.quit()
-    end
-  end
-end
-
-function love.textinput(text)
-  gooi.textinput(text)
-end
+function love.keypressed(key) gooi.keypressed(key) end
+function love.textinput(text) gooi.textinput(text) end

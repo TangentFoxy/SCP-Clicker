@@ -1,0 +1,15 @@
+items:
+- research_minor not implemented
+- breach not implemented
+
+gui design:
+- need a way to reliably show reports (remember to use x/y/w/h +9/-9 to find
+  wordwrap size)
+
+function:
+- determine a 'find rate' to use to determine when reports are added to queue
+- actions to take when reading a report
+  (for example, don't automatically assign us that it was captured, that needs
+   to be based on actions taken)
+  (note: multiple is not handled properly yet, I need to have non-multiples
+   removed when they are successfully acted upon)
