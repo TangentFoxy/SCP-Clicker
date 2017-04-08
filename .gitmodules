@@ -1,0 +1,3 @@
+[submodule "src/lib/pop"]
+	path = src/lib/pop
+	url = git@github.com:Guard13007/Pop.Box.git
