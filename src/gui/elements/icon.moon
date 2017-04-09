@@ -1,5 +1,7 @@
 import graphics from love
 
+icons = require "icons"
+
 element = require "lib/pop/elements/element"
 
 class icon extends element
@@ -19,3 +21,8 @@ class icon extends element
   draw: =>
     graphics.setColor 255, 255, 255, 255
     graphics.draw @icon, @data.x, @data.y, 0, @scaleX, @scaleY
+
+  delete: =>
+    super @
+
+    icons.fix_order!
