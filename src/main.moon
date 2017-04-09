@@ -2,14 +2,8 @@ import graphics, mouse from love
 import round from require "lib.lume"
 
 pop = require "lib.pop"
-
-data = {
-  cash: 0
-  savings_rate: 0
-  research: 0
-  danger: 0
-  danger_doubling_time: 8
-}
+icons = require "icons"
+data = require "data"
 
 icon_size = 128
 margin = 8
@@ -21,17 +15,13 @@ local tooltip_box, tooltip_text, icon_grid
 add_icon = (data) ->
   x = #icon_grid.data.child % icon_grid.data.grid_width
   y = math.floor #icon_grid.data.child / icon_grid.data.grid_width
-  --data.x = x * (icon_size + margin) + margin
-  --data.y = y * (icon_size + margin) + margin
   data.w = icon_size
   data.h = icon_size
   data.update = true
-  --return pop.icon icon_grid, data
-  return pop.icon(icon_grid, data)\move x * (icon_size + margin) + margin, y * (icon_size + margin) + margin
+  data.activated = true
+  data.apply pop.icon(icon_grid, data)\move x * (icon_size + margin) + margin, y * (icon_size + margin) + margin
 
 love.load = ->
-  --graphics.setBackgroundColor 255, 255, 255, 255
-
   pop.load "gui"
 
   grid_width = math.floor graphics.getWidth! / (icon_size + margin)
@@ -48,56 +38,6 @@ love.load = ->
     :grid_width, :grid_height
     update: true
   })\setColor(255, 255, 255, 255)\align "center"
-
-  cash = add_icon {
-    icon: "icons/banknote.png"
-    tooltip: "Get funds.\n+$100 cash, +1% danger"
-  }
-
-  cash.clicked = (x, y, button) =>
-    if button == pop.constants.left_mouse
-      data.cash += 100
-      data.danger += 1
-
-  cash.update = (dt) =>
-    data.cash += data.savings_rate * dt
-
-  research = add_icon {
-    icon: "icons/soap-experiment.png"
-    tooltip: "Research contained SCPs.\n+1 research, +10% danger"
-  }
-
-  research.clicked = (x, y, button) =>
-    if button == pop.constants.left_mouse
-      data.research += 1
-      data.danger += 10
-
-  --research.update = (dt) =>
-  --  data.research += 0.3 * dt
-
-  savings = add_icon {
-    icon: "icons/piggy-bank.png"
-    tooltip: "Open a savings account.\n-$1000 cash, +$1/s cash"
-  }
-
-  savings.clicked = (x, y, button) =>
-    if button == pop.constants.left_mouse
-      if data.cash >= 1000
-        data.cash -= 1000
-        data.savings_rate += 1
-
-  rituals = add_icon {
-    icon: "icons/pentagram-rose.png"
-    tooltip: "Use Class D personnel to complete containment rituals.\n-$80 cash, -8% danger"
-  }
-
-  rituals.clicked = (x, y, button) =>
-    if button == pop.constants.left_mouse
-      if data.cash >= 80
-        data.cash -= 80
-        data.danger -= 8
-        if data.danger < 0
-          data.danger = 0.01
 
   cash_display = pop.text({fontSize: 20, update: true})\align "left", "bottom"
   research_display = pop.text({fontSize: 20, update: true})\align "right", "bottom"
@@ -130,12 +70,29 @@ love.load = ->
 love.update = (dt) ->
   pop.update dt
 
-  -- danger doubles every 10 seconds
-  data.danger += data.danger / data.danger_doubling_time * dt
+  data.cash += data.cash_rate * dt
+  data.research += data.research_rate * dt
+  data.danger += data.danger_rate * dt
+
+  data.cash += data.cash * data.cash_multiplier * dt
+  data.research += data.research * data.research_multiplier * dt
+  data.danger += data.danger * data.danger_multiplier * dt
+
+  if data.danger < 0
+    data.danger = 0
+
+  for icon in *icons
+    unless icon.activated
+      if icon.trigger.cash and data.cash >= icon.trigger.cash
+        add_icon icon
+      elseif icon.trigger.research and data.research >= icon.trigger.research
+        add_icon icon
+      elseif icon.trigger.danger and data.danger >= icon.trigger.danger
+        add_icon icon
 
   if pop.hovered
     if pop.hovered.data.tooltip
-      tooltip_text\setText pop.hovered.data.tooltip
+      tooltip_text\setText icons.replace pop.hovered.data
       w, h = tooltip_text\getSize!
       tooltip_box\setSize w + margin*2, h + margin*2
       x, y = mouse.getPosition!
@@ -150,12 +107,6 @@ love.update = (dt) ->
       tooltip_text\setText ""
       tooltip_box\setSize 0, 0
     pop.focused = tooltip_box
-  --if pop.hovered
-  --  tooltip\setText(pop.hovered.data.tooltip)\move mouse.getPosition!
-  --  pop.focused = tooltip
-  --else
-  --  tooltip\setText ""
-  --  pop.focused = false
 
 love.draw = ->
   pop.draw!
@@ -173,6 +124,7 @@ love.mousereleased = (x, y, button) ->
 love.keypressed = (key) ->
   unless pop.keypressed key
     if key == "escape"
+      --TODO pause popup!
       love.event.quit!
     elseif key == "d"
       debug = not debug
