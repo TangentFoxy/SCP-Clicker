@@ -5,6 +5,7 @@ pop = require "lib.pop"
 
 data = {
   cash: 0
+  savings_rate: 0
   research: 0
   danger: 0
 }
@@ -14,87 +15,97 @@ margin = 8
 
 debug = false
 
-local tooltip_box, tooltip_text
+local tooltip_box, tooltip_text, icon_grid
+
+add_icon = (data) ->
+  x = #icon_grid.data.child % icon_grid.data.grid_width
+  y = math.floor #icon_grid.data.child / icon_grid.data.grid_width
+  --data.x = x * (icon_size + margin) + margin
+  --data.y = y * (icon_size + margin) + margin
+  data.w = icon_size
+  data.h = icon_size
+  data.update = true
+  --return pop.icon icon_grid, data
+  return pop.icon(icon_grid, data)\move x * (icon_size + margin) + margin, y * (icon_size + margin) + margin
 
 love.load = ->
-  graphics.setBackgroundColor 255, 255, 255, 255
+  --graphics.setBackgroundColor 255, 255, 255, 255
 
   pop.load "gui"
 
-  width = math.floor graphics.getWidth! / (icon_size + margin)
+  grid_width = math.floor graphics.getWidth! / (icon_size + margin)
   if graphics.getWidth! % (icon_size + margin) < 8
-    width -= 1
+    grid_width -= 1
 
-  height = math.floor graphics.getHeight! / (icon_size + margin)
+  grid_height = math.floor graphics.getHeight! / (icon_size + margin)
   if graphics.getHeight! % (icon_size + margin) < 8
-    height -= 1
+    grid_height -= 1
 
-  icon_alignment = pop.element({
-    w: width * (icon_size + margin) + margin
-    h: height * (icon_size + margin) + margin
-  })\align "center"
-  icon_alignment.data.update = true
+  icon_grid = pop.box({
+    w: grid_width * (icon_size + margin) + margin
+    h: grid_height * (icon_size + margin) + margin
+    :grid_width, :grid_height
+    update: true
+  })\setColor(255, 255, 255, 255)\align "center"
 
-  cash = pop.icon(icon_alignment, {
-    w: icon_size, h: icon_size
+  cash = add_icon {
     icon: "icons/banknote.png"
-    tooltip: "Seek funding. (+$1 cash +0.01 danger)"
-  })\move icon_size + margin*2, margin
+    tooltip: "Get funds.\n+$100 cash, +1% danger"
+  }
 
-  research = pop.icon(icon_alignment, {
-    w: icon_size, h: icon_size
-    icon: "icons/soap-experiment.png"
-    tooltip: "Research contained SCPs. (+1 research +0.5 danger)"
-  })\move margin, margin
-
-  cash.clicked = =>
-    data.cash += 1
-    data.danger += 0.01
-
-  research.clicked = ->
-    data.research += 1
-    data.danger += 0.5
-
-  cash.data.update = true
-  research.data.update = true
+  cash.clicked = (x, y, button) =>
+    if button == pop.constants.left_mouse
+      data.cash += 100
+      data.danger += 1
 
   cash.update = (dt) =>
-    data.cash += 0.1 * dt
+    data.cash += data.savings_rate * dt
 
-  research.update = (dt) =>
-    data.research += 0.3 * dt
+  research = add_icon {
+    icon: "icons/soap-experiment.png"
+    tooltip: "Research contained SCPs.\n+1 research, +10% danger"
+  }
 
-  danger = pop.element()
-  danger.data.update = true
-  danger.update = (dt) =>
-    data.danger += 0.008 * dt
+  research.clicked = (x, y, button) =>
+    if button == pop.constants.left_mouse
+      data.research += 1
+      data.danger += 10
 
-  cash_display = pop.text("Cash: $0", 20)\setColor(0, 0, 0, 255)\align "left", "bottom"
-  research_display = pop.text("Research: 0", 20)\setColor(0, 0, 0, 255)\align "right", "bottom"
-  danger_display = pop.text("Danger: 0%", 20)\setColor(0, 0, 0, 255)\align "center", "bottom"
+  --research.update = (dt) =>
+  --  data.research += 0.3 * dt
 
-  cash_display.data.update = true
-  research_display.data.update = true
-  danger_display.data.update = true
+  savings = add_icon {
+    icon: "icons/piggy-bank.png"
+    tooltip: "Open a savings account.\n-$1000 cash, +$1/s cash"
+  }
 
-  format = (num) ->
-    formatted = num
+  savings.clicked = (x, y, button) =>
+    if button == pop.constants.left_mouse
+      if data.cash >= 1000
+        data.cash -= 1000
+        data.savings_rate += 1
+
+  cash_display = pop.text({fontSize: 20, update: true})\align "left", "bottom"
+  research_display = pop.text({fontSize: 20, update: true})\align "right", "bottom"
+  danger_display = pop.text({fontSize: 20, update: true})\align "center", "bottom"
+
+  format_commas = (num) ->
+    result = num
     while true
-      formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", "%1,%2")
-      if k==0 then
-        break
-    return formatted
+      result, k = string.gsub(result, "^(-?%d+)(%d%d%d)", "%1,%2")
+      break if k==0
+    return result
 
   cash_display.update = =>
-    cash_display\setText "Cash: $#{format string.format "%.2f", round data.cash, .01}"
+    cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash, .01}"
     cash_display\move margin, -margin --temporary manual margin
 
   research_display.update = =>
-    research_display\setText "Research: #{format string.format "%.2f", round data.research, .01}"
+    research_display\setText "Research: #{format_commas string.format "%.2f", round data.research, .01}"
     research_display\move -margin, -margin --temporary manual margin
 
   danger_display.update = =>
-    danger_display\setText "Danger: #{format string.format "%.2f", round data.danger, .01}%"
+    danger_display\setText "Danger: #{format_commas string.format "%.2f", round data.danger, .01}%"
     danger_display\move nil, -margin -- temporary manual margin
 
   tooltip_box = pop.box()
@@ -104,6 +115,9 @@ love.load = ->
 
 love.update = (dt) ->
   pop.update dt
+
+  -- danger doubles every 10 seconds
+  data.danger += data.danger/10 * dt
 
   if pop.hovered
     if pop.hovered.data.tooltip
