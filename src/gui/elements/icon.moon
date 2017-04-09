@@ -17,4 +17,5 @@ class icon extends element
     @scaleY = @data.h / @icon\getHeight!
 
   draw: =>
+    graphics.setColor 255, 255, 255, 255
     graphics.draw @icon, @data.x, @data.y, 0, @scaleX, @scaleY
