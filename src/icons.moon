@@ -189,23 +189,45 @@ icons = {
   { -- 7
     trigger: {scp: 0.01, multiple: true}
     icon: "icons/cracked-glass.png"
-    tooltip: "SCP-132 \"The Broken Desert\""
-    apply: ->
+    tooltip: "SCP-132 \"The Broken Desert\"\nClick to hide."
+    research: 0.1 --TODO make sure this little research bonus is applied when one is found
+    apply: (element) ->
+      element.clicked = (x, y, button) =>
+        element\delete!
   }
   { -- 8
     trigger: {random: 0.8/60, multiple: true} -- approximately a 0.8% chance per minute ?
     icon: "icons/morgue-feet.png"
-    tooltip: "An agent has died."
+    tooltip: "An agent has died.\nClick to dismiss."
+    tip: "When agents die, things get dangerous..."
     apply: (element) ->
       if icons[5].count
         icons[5].count -= 1
-        data.cash_rate -= icons[5].cash_rate
-        data.danger_rate -= icons[5].danger_rate
+        data.cash_rate -= icons[5].cash_rate*0.9
+        data.danger_rate -= icons[5].danger_rate*1.1
         --NOTE will not update the displayed count :/
         element.clicked = (x, y, button) =>
           element\delete!
       else
         element\delete!
+  }
+  { -- 9
+    trigger: {agents: 50}
+    icon: "icons/hammer-sickle.png"
+    tooltip: "Agent management. Hire replacements automatically.\n${cash_rate}"
+    cash_rate: -4
+    apply: (element) ->
+      -- I am really not sure how to handle this just yet
+      --TODO agent count should be moved into data, instead of within the icon it is in
+  }
+  { -- 10
+    trigger: {savings_accounts: 30}
+    icon: "icons/bank.png"
+    tooltip: "Open a bank.\n${cash}, ${cash_multiplier}"
+    cash: -6000
+    cash_multiplier: 1/20
+    apply: (element) ->
+      --TODO write me, bite me, etc
   }
 }
 
