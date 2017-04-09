@@ -20,6 +20,7 @@ add_icon = (data) ->
   data.update = true
   data.activated = true
   data.apply pop.icon(icon_grid, data)\move x * (icon_size + margin) + margin, y * (icon_size + margin) + margin
+  data.apply = nil
 
 love.load = ->
   pop.load "gui"
@@ -127,7 +128,24 @@ love.keypressed = (key) ->
       --TODO pause popup!
       love.event.quit!
     elseif key == "d"
-      debug = not debug
+      if debug = not debug
+        data.cash += 5000
+        data.research += 10
+        data.danger -= data.danger * 0.99
+        for icon in *icon_grid.child
+          if icon.data.count
+            for i=1,5
+              icon\clicked 0, 0, pop.constants.left_mouse
+    elseif key == "e"
+      --print (require "lib.pop.lib.inspect.inspect")(pop.screen.data)
+      love.filesystem.write "OUT", pop.export!
+    elseif key == "i"
+      --print (require "lib.pop.lib.inspect.inspect")((require "lib.pop.lib.bitser.bitser").loads(love.filesystem.read "OUT"))
+      pop.screen = nil
+      print "FUCK"
+      pop.load!
+      pop.import love.filesystem.read "OUT"
+      --for key, value in pairs pop.screen.data
 
 love.keyreleased = (key) ->
   pop.keyreleased key

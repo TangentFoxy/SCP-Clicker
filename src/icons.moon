@@ -92,11 +92,18 @@ icons = {
     cash: -800
     cash_rate: 1
     apply: (element) ->
+      bg = pop.box(element)\align "left", "bottom"
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      element.data.count = 0
+      bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash
             data.cash += element.data.cash
             data.cash_rate += element.data.cash_rate
+            element.data.count += 1
+            fg\setText element.data.count
+            bg\setSize fg\getSize!
   }
   {
     trigger: {}
@@ -118,11 +125,18 @@ icons = {
     cash_rate: -1.2
     danger_rate: -0.05
     apply: (element) ->
+      bg = pop.box(element)\align "left", "bottom"
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      element.data.count = 0
+      bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs(element.data.cash_rate)
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
+            element.data.count += 1
+            fg\setText element.data.count
+            bg\setSize fg\getSize!
   }
 }
 
