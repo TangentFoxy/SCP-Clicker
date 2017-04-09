@@ -8,6 +8,7 @@ data = {
   savings_rate: 0
   research: 0
   danger: 0
+  danger_doubling_time: 8
 }
 
 icon_size = 128
@@ -85,6 +86,19 @@ love.load = ->
         data.cash -= 1000
         data.savings_rate += 1
 
+  rituals = add_icon {
+    icon: "icons/pentagram-rose.png"
+    tooltip: "Use Class D personnel to complete containment rituals.\n-$80 cash, -8% danger"
+  }
+
+  rituals.clicked = (x, y, button) =>
+    if button == pop.constants.left_mouse
+      if data.cash >= 80
+        data.cash -= 80
+        data.danger -= 8
+        if data.danger < 0
+          data.danger = 0.01
+
   cash_display = pop.text({fontSize: 20, update: true})\align "left", "bottom"
   research_display = pop.text({fontSize: 20, update: true})\align "right", "bottom"
   danger_display = pop.text({fontSize: 20, update: true})\align "center", "bottom"
@@ -117,7 +131,7 @@ love.update = (dt) ->
   pop.update dt
 
   -- danger doubles every 10 seconds
-  data.danger += data.danger/10 * dt
+  data.danger += data.danger / data.danger_doubling_time * dt
 
   if pop.hovered
     if pop.hovered.data.tooltip
