@@ -267,6 +267,24 @@ icons = {
             data.cash += element.data.cash
             data.cash_multiplier += element.data.cash_multiplier
   }
+  { -- 11
+    trigger: {danger_increasing: 2}
+    icon: "icons/IDK"
+    tooltip: "When danger is increasing too fast, you have to take desperate action.\n${cash}, ${danger}, ${danger_rate}"
+    cash: -12000
+    danger: -25
+    danger_rate: 0.1
+    apply: (element) ->
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.cash >= math.abs element.data.cash
+            data.cash += element.data.cash
+            data.danger += element.data.danger
+            data.danger_rate += element.data.danger_rate
+  }
+  { -- 12
+    trigger: {}
+  }
 }
 
 for i=1, #icons
