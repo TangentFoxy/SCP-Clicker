@@ -22,6 +22,14 @@ class icon extends element
     graphics.setColor 255, 255, 255, 255
     graphics.draw @icon, @data.x, @data.y, 0, @scaleX, @scaleY
 
+    return @
+
+  setIcon: (icon) =>
+    @data.icon = icon
+    @icon = graphics.newImage @data.icon
+
+    return @
+
   delete: =>
     super @
 

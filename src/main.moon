@@ -11,9 +11,10 @@ timers = require "timers"
 icon_size = 128
 margin = 8
 
+paused = false
 debug = false
 
-local tooltip_box, tooltip_text, icon_grid, tip
+local tooltip_box, tooltip_text, icon_grid, tip, paused_overlay
 
 deepcopy = (orig) ->
   orig_type = type(orig)
@@ -27,24 +28,26 @@ deepcopy = (orig) ->
     copy = orig
   return copy
 
-icons.add_icon = (data) ->
+icons.add_icon = (icon) ->
   x = #icon_grid.data.child % icon_grid.data.grid_width
   y = math.floor #icon_grid.data.child / icon_grid.data.grid_width
-  if data.trigger.multiple
-    data = deepcopy data
-  data.w = icon_size
-  data.h = icon_size
-  data.update = true
-  data.activated = true
-  data.apply pop.icon(icon_grid, data)\move x * (icon_size + margin) + margin, y * (icon_size + margin) + margin
-  data.apply = nil
-  if data.tip
-    tip\setText data.tip
-    tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+  if icon.trigger.multiple
+    icon = deepcopy icon
+  icon.w = icon_size
+  icon.h = icon_size
+  if false != icon.apply pop.icon(icon_grid, icon)\move x * (icon_size + margin) + margin, y * (icon_size + margin) + margin
+    icon.activated = true -- make sure icons are only added once when triggered
+    icon.apply = nil -- won't be needed
+    table.insert data.icons, icon.id
+    if icon.tip
+      tip\setText icon.tip
+      tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
 
 icons.fix_order = ->
   x, y = margin, margin
+  data.icons = {}
   for icon in *icon_grid.child
+    table.insert data.icons, icon.id
     icon\setPosition x, y
     x += margin + icon_size
     if x > icon_grid.data.w - margin - icon_size
@@ -66,7 +69,6 @@ love.load = ->
     w: grid_width * (icon_size + margin) + margin
     h: grid_height * (icon_size + margin) + margin
     :grid_width, :grid_height
-    update: true
   })\setColor(255, 255, 255, 255)\align "center"
 
   cash_display = pop.text({fontSize: 20, update: true})\align "left", "bottom"
@@ -97,7 +99,7 @@ love.load = ->
     danger_display\move nil, -margin -- temporary manual margin
 
   cash_rate_display.update = =>
-    value = data.cash_rate + data.cash * data.cash_multiplier
+    value = data.cash_rate + math.min math.abs(data.cash) * data.cash_multiplier, 500
     if value < 0
       cash_rate_display\setText "-$#{format_commas string.format "%.2f", round math.abs(value), .01}/s"
     else
@@ -131,16 +133,30 @@ love.load = ->
     for icon in *icons
       if icon.trigger.random
         if random! <= icon.trigger.random
+          unless icon.trigger.multiple
+            icon.trigger.random = nil -- don't fire again, NOTE this will not be saved!
           icons.add_icon icon
 
+  paused_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!, draw: false})\setColor 0, 0, 0, 220
+  paused_overlay.clicked = (x, y, button) =>
+    if button == pop.constants.left_mouse
+      paused_overlay.data.draw = false
+      paused = false
+  center_box = pop.box(paused_overlay, {w: 400, h: 120})\align "center", "center"
+  pop.text(center_box, "Paused\nClick here to save and exit.", 22)\setColor(255, 255, 255)\align "center", "center"
+  center_box.clicked = (x, y, button) =>
+      love.event.quit!
+
 love.update = (dt) ->
+  if paused return
+
   pop.update dt
 
   data.cash += data.cash_rate * dt
   data.research += data.research_rate * dt
   data.danger += data.danger_rate * dt
 
-  data.cash += data.cash * data.cash_multiplier * dt
+  data.cash += math.min math.abs(data.cash) * data.cash_multiplier * dt, 500 * dt
   data.research += data.research * data.research_multiplier * dt
   data.danger += data.danger * data.danger_multiplier * dt
 
@@ -149,12 +165,10 @@ love.update = (dt) ->
 
   for icon in *icons
     unless icon.activated
-      if icon.trigger.cash and data.cash >= icon.trigger.cash
-        icons.add_icon icon
-      elseif icon.trigger.research and data.research >= icon.trigger.research
-        icons.add_icon icon
-      elseif icon.trigger.danger and data.danger >= icon.trigger.danger
-        icons.add_icon icon
+      for key, value in pairs data
+        if icon.trigger[key] and value >= icon.trigger[key]
+          icons.add_icon icon
+          break
 
   job = 1
   while job <= #timers
@@ -163,9 +177,12 @@ love.update = (dt) ->
     else
       job += 1
 
-  if data.cash_rate < -3
+  if data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) < -20 or data.cash < 60
     tip\setText "Be careful, if you go below $0, the Foundation goes backrupt. Game over."
     tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+  elseif data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) > 0 or data.cash > 1200
+    if tip.data.text == "Be careful, if you go below $0, the Foundation goes backrupt. Game over."
+      tip\setText ""
 
   if pop.hovered
     if pop.hovered.data.tooltip
@@ -200,18 +217,17 @@ love.mousereleased = (x, y, button) ->
 
 love.keypressed = (key) ->
   unless pop.keypressed key
-    if key == "escape"
-      --TODO pause popup!
-      love.event.quit!
+    if key == "escape" or key == "p"
+      paused = not paused
+      if paused
+        paused_overlay.data.draw = true
+      else
+        paused_overlay\clicked 0, 0, pop.constants.left_mouse
     elseif key == "d"
       if debug = not debug
         data.cash += 50000
         data.research += 10
         data.danger -= data.danger * 0.99
-        for icon in *icon_grid.child
-          if icon.data.count
-            for i=1,5
-              icon\clicked 0, 0, pop.constants.left_mouse
     elseif key == "t"
       icons.add_icon icons[8]
 
