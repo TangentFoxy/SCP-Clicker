@@ -73,19 +73,6 @@ if [ ! -r "$win32Dir/love-$loveVersion-win32/love.exe" ]; then
 	echo "  Done."
 fi
 
-if [ ! -r "$win64Dir/love-$loveVersion-win64/love.exe" ]; then
-	mkdir -p "$win64Dir"
-	echo "Downloading win64src..."
-	$download "$win64Dir/love64.zip" https://bitbucket.org/rude/love/downloads/love-$loveVersion-win64.zip
-	echo "  Done."
-	echo "Extracting win64src..."
-	unzip -q "$win64Dir/love64.zip" -d "$win64Dir"
-	echo "  Done."
-	echo "Deleting ZIP file..."
-	rm -f "$win64Dir/love64.zip"
-	echo "  Done."
-fi
-
 if [ ! -d "$osx10Dir/love.app" ]; then
 	mkdir -p "$osx10Dir"
 	echo "Downloading osx10src..."
@@ -121,25 +108,6 @@ zip -r -X -q "$outputDir/$packageName-${version}_win32.zip" ./LOVE-license.txt
 if [ "$(ls -A $includes)" ]; then
 	cd "$includes"
 	zip -r -X -q "$outputDir/$packageName-${version}_win32.zip" ./*
-fi
-echo "  Done."
-
-echo "Building $packageName (version $version)... (win64 zip)"
-# EXE with ZIP at end
-cat "$win64exe" "$outputDir/$packageName-$version.love" > "$win64Dir/$packageName.exe"
-cd "$win64Dir"
-# ZIP up the EXE
-zip -r -X -q "$outputDir/$packageName-${version}_win64.zip" "./$packageName.exe"
-cd ./love-$loveVersion-win64
-# ZIP up the required DLLs
-zip -r -X -q "$outputDir/$packageName-${version}_win64.zip" ./*.dll
-cp ./license.txt ./LOVE-license.txt
-# ZIP up the LOVE license
-zip -r -X -q "$outputDir/$packageName-${version}_win64.zip" ./LOVE-license.txt
-# ZIP up extra included files
-if [ "$(ls -A $includes)" ]; then
-	cd "$includes"
-	zip -r -X -q "$outputDir/$packageName-${version}_win64.zip" ./*
 fi
 echo "  Done."
 
@@ -184,7 +152,6 @@ if [ $latestBuilds = true ]; then
 	mkdir -p "$latestBuildsDir"
 	rm -f "$latestBuildsDir/*"
 	cp "$outputDir/$packageName-${version}_win32.zip" "$latestBuildsDir"
-	cp "$outputDir/$packageName-${version}_win64.zip" "$latestBuildsDir"
 	cp "$outputDir/$packageName-${version}_osx.zip" "$latestBuildsDir"
 	cp "$outputDir/$packageName-${version}_linux.zip" "$latestBuildsDir"
 fi

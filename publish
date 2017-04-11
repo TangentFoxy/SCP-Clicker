@@ -5,7 +5,6 @@ source "$outputDir/build.number"
 version=$version-$build
 
 butler push "$latestBuildsDir/$packageName-${version}_win32.zip" guard13007/scp-clicker:win32
-butler push "$latestBuildsDir/$packageName-${version}_win64.zip" guard13007/scp-clicker:win64
 butler push "$latestBuildsDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:osx
 butler push "$latestBuildsDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:linux
 
