@@ -1,2 +1,6 @@
 *.lua
 !src/lib/*
+!builds/
+builds/*
+!builds/build.number
+tmp/

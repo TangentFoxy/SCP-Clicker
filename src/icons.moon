@@ -80,7 +80,8 @@ icons = {
         tbl[key] = icon.trigger.scp
     scp = icons[weightedchoice tbl]
     unless scp.trigger.multiple
-      scp.trigger.scp = nil -- can't be triggered again, NOTE this won't be saved!
+      scp.trigger.scp = nil
+      table.insert data.cleared_scps, scp.id
     data.scp_count += 1
     return scp
 
@@ -162,7 +163,7 @@ icons = {
       bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
-          if data.cash >= math.abs(element.data.cash_rate) and data.danger > 0.1
+          if data.cash >= math.abs element.data.cash_rate
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.agent_count += 1
@@ -171,7 +172,7 @@ icons = {
     trigger: {cash: 6000}
     icon: "icons/treasure-map.png"
     tooltip: "Send an expedition to find SCPs.\n${cash}, ${danger}, ${time}"
-    tip: "Expeditions are essential, but dangerous. Make sure you have enough agents to handle the danger."
+    tip: "Expeditions are dangerous. Make sure you have enough agents to handle it."
     cash: -5000
     danger: 10
     time: 20
@@ -202,7 +203,7 @@ icons = {
           fn!
   }
   { -- 7 the broken desert
-    trigger: {scp: 0.01, multiple: true}
+    trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
     icon: "icons/cracked-glass.png"
     tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${research}"
     research: 5
@@ -212,68 +213,84 @@ icons = {
         element\delete!
   }
   { -- 8 agent deaths
-    trigger: {random: 0.8/60, multiple: true} -- approximately a 0.8% chance per minute ?
+    trigger: {random: 0.8/60, multiple: true} -- approximately a 0.8% chance per minute ? THIS IS WRONG!
     icon: "icons/morgue-feet.png"
     tooltip: "An agent has died.\nClick to dismiss."
     tip: "When agents die, things get dangerous..."
-    apply: (element) ->
-      if data.agent_count > 0
-        data.agent_count -= 1
-        data.cash_rate -= icons[5].cash_rate*0.9
-        data.danger_rate -= icons[5].danger_rate*1.1
-        element.clicked = (x, y, button) =>
+    tipOnce: true --NOTE tipOnces are not saved, I don't care
+    apply: (element, build_only) ->
+      unless build_only
+        if data.agent_count > 0
+          data.agent_count -= 1
+          data.cash_rate -= icons[5].cash_rate*0.9
+          data.danger_rate -= icons[5].danger_rate*1.1
+        else
           element\delete!
-      else
+          return false -- cancel the action!
+      element.clicked = (x, y, button) =>
         element\delete!
-        return false -- cancel the action!
   }
   { -- 9 automatic agent re-hire
-    trigger: {agent_count: 50}
+    trigger: {agent_count: 30}
     icon: "icons/hammer-sickle.png"
     tooltip: "(INACTIVE) Hire replacement agents automatically.\n${cash_rate}"
     cash_rate: -4
     update: false -- inactive by default
     apply: (element) ->
+      element.data.agent_count = data.agent_count
       element.update = =>
         if data.agent_count < element.data.agent_count
           data.cash_rate += icons[5].cash_rate
           data.danger_rate += icons[5].danger_rate
           data.agent_count += 1
+        elseif data.agent_count > element.data.agent_count
+          element.data.agent_count = data.agent_count
+      if data.agent_rehire_enabled
+        element.data.update = true
+        element\setIcon "icons/hammer-sickle-inverted.png"
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           -- if turning off, or have cash to turn on
           if not element.data.update or data.cash >= math.abs(element.data.cash_rate)
             element.data.update = not element.data.update
             if element.data.update
-              element.data.agent_count = data.agent_count
               data.cash_rate += element.data.cash_rate
               element\setIcon "icons/hammer-sickle-inverted.png"
               element.data.tooltip = "(ACTIVE) Hire replacement agents automatically.\n${cash_rate}"
+              data.agent_rehire_enabled = true
             else
               data.cash_rate -= element.data.cash_rate
               element\setIcon "icons/hammer-sickle.png"
               element.data.tooltip = "(INACTIVE) Hire replacement agents automatically.\n${cash_rate}"
+              data.agent_rehire_enabled = false
   }
   { -- 10 open banks
-    trigger: {savings_accounts: 30}
+    trigger: {savings_accounts: 20}
     icon: "icons/bank.png"
     tooltip: "Open a bank.\n${cash}, ${cash_multiplier} (maximum +$500/s cash)"
     cash: -6000
     cash_multiplier: 1/100
     apply: (element) ->
+      bg = pop.box(element)\align "left", "bottom"
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      fg.update = =>
+        fg\setText data.bank_count
+        bg\setSize fg\getSize!
+      bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash
             data.cash += element.data.cash
             data.cash_multiplier += element.data.cash_multiplier
+            data.bank_count += 1
   }
-  { -- 11
-    trigger: {danger_increasing: 2}
-    icon: "icons/IDK"
-    tooltip: "When danger is increasing too fast, you have to take desperate action.\n${cash}, ${danger}, ${danger_rate}"
-    cash: -12000
-    danger: -25
-    danger_rate: 0.1
+  { -- 11 emergency ritual
+    trigger: {danger_increasing: 2.5}
+    icon: "icons/pentagram-rose.png"
+    tooltip: "Complete a ritual to reduce danger.\n${cash}, ${danger}, ${danger_rate}"
+    cash: -2500
+    danger: -20
+    danger_rate: 0.25
     apply: (element) ->
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
@@ -282,9 +299,30 @@ icons = {
             data.danger += element.data.danger
             data.danger_rate += element.data.danger_rate
   }
-  { -- 12
-    trigger: {}
+  { -- 12 class-d personnel
+    trigger: {agent_count: 40}
+    icon: "icons/convict.png"
+    tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate}"
+    cash_rate: -0.25
+    danger_rate: -0.01
+    apply: (element) ->
+      bg = pop.box(element)\align "left", "bottom"
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      fg.update = =>
+        fg\setText data.class_d_count
+        bg\setSize fg\getSize!
+      bg\setSize fg\getSize!
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.cash >= math.abs element.data.cash_rate
+            data.cash_rate += element.data.cash_rate
+            data.danger_rate += element.data.danger_rate
+            data.class_d_count += 1
   }
+  --{
+    --trigger: {cash: 16000}
+    -- a better source of income is needed
+  --}
 }
 
 for i=1, #icons

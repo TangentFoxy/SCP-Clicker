@@ -1,7 +1,7 @@
 math.randomseed(os.time())
 
 import graphics, mouse from love
-import round, random from require "lib.lume"
+import round, random, serialize, deserialize from require "lib.lume"
 
 pop = require "lib.pop"
 icons = require "icons"
@@ -14,7 +14,7 @@ margin = 8
 paused = false
 debug = false
 
-local tooltip_box, tooltip_text, icon_grid, tip, paused_overlay
+local tooltip_box, tooltip_text, icon_grid, tip, paused_overlay, exit_action
 
 deepcopy = (orig) ->
   orig_type = type(orig)
@@ -28,20 +28,26 @@ deepcopy = (orig) ->
     copy = orig
   return copy
 
-icons.add_icon = (icon) ->
+icons.add_icon = (icon, build_only) ->
   x = #icon_grid.data.child % icon_grid.data.grid_width
   y = math.floor #icon_grid.data.child / icon_grid.data.grid_width
   if icon.trigger.multiple
     icon = deepcopy icon
   icon.w = icon_size
   icon.h = icon_size
-  if false != icon.apply pop.icon(icon_grid, icon)\move x * (icon_size + margin) + margin, y * (icon_size + margin) + margin
+  if false != icon.apply(pop.icon(icon_grid, icon)\move(x * (icon_size + margin) + margin, y * (icon_size + margin) + margin), build_only)
     icon.activated = true -- make sure icons are only added once when triggered
-    icon.apply = nil -- won't be needed
-    table.insert data.icons, icon.id
+    unless build_only
+      if icon.id != 0 -- don't save the pause button!
+        table.insert data.icons, icon.id
     if icon.tip
-      tip\setText icon.tip
-      tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+      if icon.tipOnce
+        tip\setText icon.tip
+        tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+        icon.tipOnce = false
+      elseif icon.tipOnce == nil
+        tip\setText icon.tip
+        tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
 
 icons.fix_order = ->
   x, y = margin, margin
@@ -53,6 +59,18 @@ icons.fix_order = ->
     if x > icon_grid.data.w - margin - icon_size
       x = margin
       y += margin + icon_size
+
+load = ->
+  if loaded_text = love.filesystem.read "save.txt"
+    loaded_data = deserialize loaded_text
+    for key, value in pairs loaded_data
+      data[key] = value
+    for id in *data.cleared_scps
+      icons[id].trigger.scp = nil
+    for id in *data.cleared_randoms
+      icons[id].trigger.random = nil
+    for id in *data.icons
+      icons.add_icon(icons[id], true)
 
 love.load = ->
   pop.load "gui"
@@ -124,28 +142,74 @@ love.load = ->
 
   tip = pop.text({fontSize: 20})\align "left", "bottom"
 
-  tooltip_box = pop.box()
-  tooltip_text = pop.text(tooltip_box, 20)
-  tooltip_box.mousemoved = (x, y, dx, dy) =>
-    @move dx, dy
-
   timers.every 1, ->
     for icon in *icons
       if icon.trigger.random
         if random! <= icon.trigger.random
           unless icon.trigger.multiple
-            icon.trigger.random = nil -- don't fire again, NOTE this will not be saved!
+            icon.trigger.random = nil
+            table.insert data.cleared_randoms, icon.id
           icons.add_icon icon
 
-  paused_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!, draw: false})\setColor 0, 0, 0, 220
-  paused_overlay.clicked = (x, y, button) =>
-    if button == pop.constants.left_mouse
-      paused_overlay.data.draw = false
-      paused = false
-  center_box = pop.box(paused_overlay, {w: 400, h: 120})\align "center", "center"
-  pop.text(center_box, "Paused\nClick here to save and exit.", 22)\setColor(255, 255, 255)\align "center", "center"
-  center_box.clicked = (x, y, button) =>
-      love.event.quit!
+  tooltip_box = pop.box()
+  tooltip_text = pop.text(tooltip_box, 20)
+  tooltip_box.mousemoved = (x, y, dx, dy) =>
+    @move dx, dy
+
+  paused_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!, draw: false})
+
+  resume = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/cancel.png", tooltip: ""})\align nil, "center"
+  resume\move margin, -icon_size - margin
+  pop.text(resume, "Resume game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  resume.clicked = (x, y, button) =>
+    paused_overlay.data.draw = false
+    paused = false
+
+  open_save_location = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/open-folder.png", tooltip: ""})\align nil, "center"
+  open_save_location\move margin
+  pop.text(open_save_location, "Open saved data location.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  open_save_location.clicked = (x, y, button) =>
+    love.system.openURL "file://" .. love.filesystem.getSaveDirectory!
+
+  exit = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/power-button.png", tooltip: ""})\align nil, "center"
+  exit\move margin, icon_size + margin
+  pop.text(exit, "Save and exit game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  exit.clicked = (x, y, button) =>
+    exit_action = "save_data"
+    love.event.quit!
+
+  debug_button = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/rune-sword.png", tooltip: ""})\align "center", "center"
+  debug_button\move icon_size / 2, -icon_size - margin
+  pop.text(debug_button, "Debug tools (cheats).", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  debug_button.clicked = (x, y, button) =>
+    data.cash += 50000
+    data.research += 10
+    data.danger -= data.danger * 0.99
+    data.dirty_cheater = true -- lolololol
+    paused_overlay.data.draw = false
+    paused = false
+
+  reset = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/save.png", tooltip: ""})\align "center", "center"
+  reset\move icon_size / 2
+  pop.text(reset, "Reset game data.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  reset.clicked = (x, y, button) =>
+    exit_action = "reset_data"
+    love.event.quit "restart"
+
+  icons.add_icon({
+    id: 0 -- the pause button being another icon was a bad design I think...
+    trigger: {}
+    icon: "icons/holosphere.png"
+    tooltip: "Pause the game."
+    apply: (element) ->
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          paused_overlay.data.draw = true
+          paused = true
+          pop.focused = false
+  })
+
+  load!
 
 love.update = (dt) ->
   if paused return
@@ -165,6 +229,8 @@ love.update = (dt) ->
 
   for icon in *icons
     unless icon.activated
+      if icon.trigger.danger_increasing and icon.trigger.danger_increasing <= data.danger_rate + data.danger * data.danger_multiplier
+        icons.add_icon icon
       for key, value in pairs data
         if icon.trigger[key] and value >= icon.trigger[key]
           icons.add_icon icon
@@ -216,23 +282,16 @@ love.mousereleased = (x, y, button) ->
   pop.mousereleased x, y, button
 
 love.keypressed = (key) ->
-  unless pop.keypressed key
-    if key == "escape" or key == "p"
-      paused = not paused
-      if paused
-        paused_overlay.data.draw = true
-      else
-        paused_overlay\clicked 0, 0, pop.constants.left_mouse
-    elseif key == "d"
-      if debug = not debug
-        data.cash += 50000
-        data.research += 10
-        data.danger -= data.danger * 0.99
-    elseif key == "t"
-      icons.add_icon icons[8]
+  if key == "escape"
+    exit_action = "save_data"
+    love.event.quit!
+  elseif key == "d"
+    debug = not debug
 
-love.keyreleased = (key) ->
-  pop.keyreleased key
+love.quit = ->
+  if exit_action == "reset_data"
+    love.filesystem.remove "save.txt"
+  elseif exit_action == "save_data"
+    love.filesystem.write "save.txt", serialize data
 
-love.textinput = (text) ->
-  pop.textinput text
+  return

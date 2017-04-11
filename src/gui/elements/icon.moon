@@ -20,6 +20,7 @@ class icon extends element
 
   draw: =>
     graphics.setColor 255, 255, 255, 255
+    graphics.rectangle "fill", @data.x, @data.y, @data.w, @data.h -- lazy way of making transparency -> white
     graphics.draw @icon, @data.x, @data.y, 0, @scaleX, @scaleY
 
     return @
@@ -29,6 +30,9 @@ class icon extends element
     @icon = graphics.newImage @data.icon
 
     return @
+
+  debugInfo: =>
+    return @data.id
 
   delete: =>
     super @
