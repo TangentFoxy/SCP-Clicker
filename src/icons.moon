@@ -135,6 +135,10 @@ icons = {
             data.cash += element.data.cash
             data.cash_rate += element.data.cash_rate
             data.savings_accounts += 1
+        elseif button == pop.constants.right_mouse
+          data.cash -= element.data.cash * 0.9
+          data.cash_rate -= element.data.cash_rate
+          data.savings_accounts -= 1
         return true
   }
   { -- 4
@@ -171,6 +175,10 @@ icons = {
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.agent_count += 1
+        elseif button == pop.constants.right_mouse
+          data.cash_rate -= element.data.cash_rate
+          data.danger_rate -= element.data.cash_rate
+          data.agent_count -= 1
         return true
   }
   { -- 6 go on expedition
@@ -223,9 +231,9 @@ icons = {
         return true
   }
   { -- 8 agent deaths
-    trigger: {random: 0.8/60, multiple: true} -- approximately a 0.8% chance per minute ? THIS IS WRONG!
+    trigger: {random: 0.8/60, multiple: true} -- 0.8% chance per minute intended, seems to be per second
     icon: "icons/morgue-feet.png"
-    tooltip: "An agent has died.\nClick to dismiss."
+    tooltip: "An agent has died.\n(click to dismiss)"
     tip: "When agents die, things get dangerous..."
     tipOnce: true --NOTE tipOnces are not saved, I don't care
     apply: (element, build_only) ->
@@ -296,6 +304,10 @@ icons = {
             data.cash += element.data.cash
             data.cash_multiplier += element.data.cash_multiplier
             data.bank_count += 1
+        elseif button == pop.constants.right_mouse
+          data.cash -= element.data.cash * 0.4
+          data.cash_multiplier -= element.data.cash_multiplier
+          data.bank_count -= 1
         return true
   }
   { -- 11 emergency ritual
@@ -318,6 +330,7 @@ icons = {
     trigger: {agent_count: 40}
     icon: "icons/convict.png"
     tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate}"
+    cash: -0.15 -- note: this is used for terminating class D's only
     cash_rate: -0.25
     danger_rate: -0.01
     apply: (element) ->
@@ -333,6 +346,12 @@ icons = {
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.class_d_count += 1
+        elseif button == pop.constants.right_mouse
+          if data.cash >= math.abs element.data.cash
+            data.cash += element.data.cash
+            data.cash_rate -= element.data.cash_rate
+            data.danger_rate -= element.data.danger_rate
+            data.class_d_count -= 1
         return true
   }
   { -- 13 the plague doctor
