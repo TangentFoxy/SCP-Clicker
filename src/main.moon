@@ -1,7 +1,7 @@
 math.randomseed(os.time())
 
 import graphics, mouse from love
-import round, random, serialize, deserialize from require "lib.lume"
+import round, random, serialize, deserialize, shuffle from require "lib.lume"
 
 pop = require "lib.pop"
 icons = require "icons"
@@ -11,7 +11,7 @@ timers = require "timers"
 icon_size = 128
 margin = 8
 
-paused = false
+paused = true -- starting paused now because we're gonna have a title screen
 debug = false
 
 local tooltip_box, tooltip_text, icon_grid, tip, paused_overlay, exit_action
@@ -196,6 +196,12 @@ love.load = ->
     exit_action = "reset_data"
     love.event.quit "restart"
 
+  visit_webpage = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/world.png"})\align "center", "center"
+  visit_webpage\move icon_size / 2, icon_size + margin
+  pop.text(visit_webpage, "Visit website.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  visit_webpage.clicked = (x, y, button) =>
+    love.system.openURL "https://guard13007.itch.io/scp-clicker"
+
   icons.add_icon({
     id: 0 -- the pause button being another icon was a bad design I think...
     trigger: {}
@@ -210,6 +216,20 @@ love.load = ->
   })
 
   load!
+
+  title_screen = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
+  title_screen.clicked = (x, y, button) =>
+    paused = false
+    title_screen\delete!
+  pop.text(title_screen, "SCP Clicker", 60)\align("center", "top")\move nil, "20"
+  pop.text(title_screen, "Secure, -Click-, Protect", 26)\align("center", "top")\move nil, 90
+  pop.text(title_screen, "Click anywhere to begin.", 26)\align("center", "bottom")\move nil, -20
+  align_grid = pop.box(title_screen, {w: icon_size*4+margin*5, h: icon_size*2+margin*3})\align("center", "center")\move nil, 40
+  icon_list = shuffle love.filesystem.getDirectoryItems "icons"
+  for x=1,4
+    for y=1,2
+      name = table.remove icon_list, 1
+      pop.icon(align_grid, {w: icon_size, h: icon_size, icon: "icons/#{name}", tooltip: ""})\move (x-1)*icon_size + x*margin, (y-1)*icon_size + y*margin
 
 love.update = (dt) ->
   if paused return

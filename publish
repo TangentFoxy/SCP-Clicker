@@ -9,5 +9,5 @@ butler push "$latestBuildsDir/$packageName-${version}_win64.zip" guard13007/scp-
 butler push "$latestBuildsDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:osx
 butler push "$latestBuildsDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:linux
 
-sleep 5
+sleep 10
 butler status guard13007/scp-clicker

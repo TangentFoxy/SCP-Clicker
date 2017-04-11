@@ -12,7 +12,6 @@ rm -rf ./tmp/src
 cp -r ./src ./tmp/src
 rm ./tmp/src/*.moon
 rm ./tmp/src/gui/elements/*.moon
-rm -rf ./tmp/src/icon/unused
 rm -rf ./tmp/src/lib/pop/docs
 rm -rf ./tmp/src/lib/pop/screenshots
 rm -rf ./tmp/src/lib/pop/spec
