@@ -48,9 +48,6 @@ icons.add_icon = (icon, build_only) ->
       elseif icon.tipOnce == nil
         tip\setText icon.tip
         tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
-  print("data.icons:")
-  for key, value in ipairs data.icons
-    print(key, value)
 
 icons.fix_order = ->
   x, y = margin, margin
@@ -286,10 +283,22 @@ love.update = (dt) ->
     unless icon.activated
       if icon.trigger.danger_increasing and icon.trigger.danger_increasing <= data.danger_rate + data.danger * data.danger_multiplier
         icons.add_icon icon
-      for key, value in pairs data
-        if icon.trigger[key] and value >= icon.trigger[key]
+      elseif icon.trigger.all
+        -- if less than current, do not trigger
+        if icon.trigger.danger_decreasing and icon.trigger.danger_decreasing < data.danger_rate + data.danger * data.danger_multiplier
+          continue
+        active = true
+        for key, value in pairs data
+          if icon.trigger.all[key] and value < icon.trigger.all[key]
+            active = false
+            break
+        if active
           icons.add_icon icon
-          break
+      else
+        for key, value in pairs data
+          if icon.trigger[key] and value >= icon.trigger[key]
+            icons.add_icon icon
+            break
 
   job = 1
   while job <= #timers

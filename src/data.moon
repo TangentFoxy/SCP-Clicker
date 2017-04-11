@@ -25,6 +25,7 @@ data = {
   expedition_progress: 0
   agent_rehire_enabled: false
   class_d_count: 0
+  automatic_expeditions: false
 
   version: 1
 }

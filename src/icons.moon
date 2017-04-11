@@ -106,14 +106,14 @@ icons = {
   { -- 2 research SCPs
     trigger: {scp_count: 2}
     icon: "icons/soap-experiment.png"
-    tooltip: "Research contained SCPs.\n${research} per SCP, ${danger} per SCP"
+    tooltip: "Research contained SCPs.\n${research} per SCP, ${danger} per SCP (maximum +99% danger)"
     research: 1
     danger: 2
     apply: (element) ->
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           data.research += element.data.research * data.scp_count
-          data.danger += element.data.danger * data.scp_count
+          data.danger += math.min element.data.danger * data.scp_count, 99
         return true
   }
   { -- 3 savings accounts
@@ -379,6 +379,50 @@ icons = {
         data.research += element.data.research
       element.clicked = (x, y, button) =>
         element\delete!
+        return true
+  }
+  { -- 15 automatic expeditions
+    trigger: {all: {danger_decreasing: -3, scp_count: 3}}
+    icon: "icons/helicopter.png"
+    tooltip: "(INACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
+    cash_rate: -12
+    research_rate: 0.04
+    apply: (element) ->
+      local recurse
+      recurse = (element=pop.screen) ->
+        if element.data.id and element.data.id == 6
+          element\clicked 0, 0, pop.constants.left_mouse
+        else
+          for child in *element.child
+            recurse child
+      element.update = =>
+        unless data.expedition_running
+          recurse!
+      if data.automatic_expeditions
+        element.data.update = true
+        element\setIcon "icons/helicopter-inverted.png"
+        element.data.tooltip = "(ACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
+      else
+        element.data.update = false
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          -- if turning off, or have cash to turn on
+          if not element.data.update or data.cash >= math.abs element.data.cash_rate
+            element.data.update = not element.data.update
+            if element.data.update
+              data.cash_rate += element.data.cash_rate
+              data.research_rate += element.data.research_rate
+              element\setIcon "icons/helicopter-inverted.png"
+              element.data.tooltip = "(ACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
+              data.automatic_expeditions = true
+              element.data.update = true
+            else
+              data.cash_rate -= element.data.cash_rate
+              data.research_rate -= element.data.research_rate
+              element\setIcon "icons/helicopter.png"
+              element.data.tooltip = "(INACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
+              data.automatic_expeditions = false
+              element.data.update = false
         return true
   }
   --{
