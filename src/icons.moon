@@ -91,6 +91,7 @@ icons = {
         data.cash += element.data.cash if element.data.cash
         data.research += element.data.research if element.data.research
         data.danger += element.data.danger if element.data.danger
+      return true
 
   { -- 1 get cash
     trigger: {danger: 0.0215}
@@ -113,6 +114,7 @@ icons = {
         if button == pop.constants.left_mouse
           data.research += element.data.research * data.scp_count
           data.danger += element.data.danger * data.scp_count
+        return true
   }
   { -- 3 savings accounts
     trigger: {cash: 800}
@@ -133,6 +135,7 @@ icons = {
             data.cash += element.data.cash
             data.cash_rate += element.data.cash_rate
             data.savings_accounts += 1
+        return true
   }
   { -- 4
     trigger: {}
@@ -146,6 +149,7 @@ icons = {
           if data.cash >= math.abs(element.data.cash) and data.danger > 0.1
             data.cash += element.data.cash
             data.danger += element.data.danger
+        return true
   }
   { -- 5 hire agent
     trigger: {danger: 0.1}
@@ -167,6 +171,7 @@ icons = {
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.agent_count += 1
+        return true
   }
   { -- 6 go on expedition
     trigger: {cash: 6000}
@@ -201,6 +206,7 @@ icons = {
           data.cash += element.data.cash
           data.danger += element.data.danger
           fn!
+        return true
   }
   { -- 7 the broken desert
     trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
@@ -214,6 +220,7 @@ icons = {
       element.clicked = (x, y, button) =>
         data.research += element.data.research
         element\delete!
+        return true
   }
   { -- 8 agent deaths
     trigger: {random: 0.8/60, multiple: true} -- approximately a 0.8% chance per minute ? THIS IS WRONG!
@@ -232,6 +239,7 @@ icons = {
           return false -- cancel the action!
       element.clicked = (x, y, button) =>
         element\delete!
+        return true
   }
   { -- 9 automatic agent re-hire
     trigger: {agent_count: 30}
@@ -267,6 +275,7 @@ icons = {
               element\setIcon "icons/hammer-sickle.png"
               element.data.tooltip = "(INACTIVE) Hire replacement agents automatically.\n${cash_rate}"
               data.agent_rehire_enabled = false
+        return true
   }
   { -- 10 open banks
     trigger: {savings_accounts: 20}
@@ -287,6 +296,7 @@ icons = {
             data.cash += element.data.cash
             data.cash_multiplier += element.data.cash_multiplier
             data.bank_count += 1
+        return true
   }
   { -- 11 emergency ritual
     trigger: {danger_increasing: 2.5}
@@ -302,6 +312,7 @@ icons = {
             data.cash += element.data.cash
             data.danger += element.data.danger
             data.danger_rate += element.data.danger_rate
+        return true
   }
   { -- 12 class-d personnel
     trigger: {agent_count: 40}
@@ -322,6 +333,7 @@ icons = {
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.class_d_count += 1
+        return true
   }
   { -- 13 the plague doctor
     trigger: {scp: 0.10}

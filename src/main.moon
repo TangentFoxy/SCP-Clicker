@@ -80,6 +80,7 @@ game_over = (reason) ->
   overlay.clicked = (x, y, button) =>
     exit_action = "reset_data"
     love.event.quit "restart"
+    --return true
 
 love.load = ->
   pop.load "gui"
@@ -171,17 +172,17 @@ love.load = ->
   resume = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/play-button.png", tooltip: ""})\align nil, "center"
   resume\move margin, -icon_size - margin
   pop.text(resume, "Resume game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
-  --resume.data.draw = false --temporary, because is weirdly broken
   resume.clicked = (x, y, button) =>
     paused_overlay.data.draw = false
-    --resume.data.draw = false
     paused = false
+    return true
 
   open_save_location = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/open-folder.png", tooltip: ""})\align nil, "center"
   open_save_location\move margin
   pop.text(open_save_location, "Open saved data location.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
   open_save_location.clicked = (x, y, button) =>
     love.system.openURL "file://" .. love.filesystem.getSaveDirectory!
+    return true
 
   exit = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/power-button.png", tooltip: ""})\align nil, "center"
   exit\move margin, icon_size + margin
@@ -189,6 +190,7 @@ love.load = ->
   exit.clicked = (x, y, button) =>
     exit_action = "save_data"
     love.event.quit!
+    --return true
 
   debug_button = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/rune-sword.png", tooltip: ""})\align "center", "center"
   debug_button\move icon_size / 2, -icon_size - margin
@@ -200,6 +202,7 @@ love.load = ->
     data.dirty_cheater = true -- lolololol
     paused_overlay.data.draw = false
     paused = false
+    return true
 
   reset = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/save.png", tooltip: ""})\align "center", "center"
   reset\move icon_size / 2
@@ -207,12 +210,14 @@ love.load = ->
   reset.clicked = (x, y, button) =>
     exit_action = "reset_data"
     love.event.quit "restart"
+    --return true
 
   visit_webpage = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/world.png"})\align "center", "center"
   visit_webpage\move icon_size / 2, icon_size + margin
   pop.text(visit_webpage, "Visit website.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
   visit_webpage.clicked = (x, y, button) =>
     love.system.openURL "https://guard13007.itch.io/scp-clicker"
+    return true
 
   icons.add_icon({
     id: 0 -- the pause button being another icon was a bad design I think...
@@ -223,9 +228,9 @@ love.load = ->
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           paused_overlay.data.draw = true
-          --resume.data.draw = true
           paused = true
           pop.focused = false
+          return true
   })
 
   load!
@@ -234,6 +239,7 @@ love.load = ->
   title_screen.clicked = (x, y, button) =>
     paused = false
     title_screen\delete!
+    return true
   pop.text(title_screen, "SCP Clicker", 60)\align("center", "top")\move nil, "20"
   pop.text(title_screen, "Secure, -Click-, Protect", 26)\align("center", "top")\move nil, 90
   pop.text(title_screen, "Click anywhere to begin.", 26)\align("center", "bottom")\move nil, -20
