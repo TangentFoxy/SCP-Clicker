@@ -10,7 +10,7 @@ copyrightYear="2017"
 # (It should be fine to leave this as its default.)
 identifier="com.$author.$packageName"
 # Current version (of your program)
-version="0.2.0"
+version="0.3.0"
 
 ###### Important! ONLY USE ABSOLUATE PATHS ######
 # Where to place the resulting executables.
@@ -54,7 +54,7 @@ autoNumberBuilds=true
 
 # Place latest builds in builds/latest?
 #  (This is a copy, not a move.)
-latestBuilds=true
+latestBuilds=false
 latestBuildsDir="$outputDir/latest"
 
 # Use curl or wget?

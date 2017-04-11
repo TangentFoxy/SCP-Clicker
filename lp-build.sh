@@ -138,7 +138,7 @@ echo "Building $packageName (version $version)... (Linux zip)"
 cd "$outputDir"
 # ZIP up the .love file
 zip -r -X -q "./$packageName-${version}_linux.zip" "./$packageName-$version.love"
-cp "$win64Dir/love-$loveVersion-win64/LOVE-license.txt" ./LOVE-license.txt
+cp "$win32Dir/love-$loveVersion-win32/LOVE-license.txt" ./LOVE-license.txt
 # ZIP up the LOVE license
 zip -r -X -q "./$packageName-${version}_linux.zip" ./LOVE-license.txt
 # ZIP up the extra included files

@@ -222,12 +222,12 @@ icons = {
     icon: "icons/cracked-glass.png"
     tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost, ${research}\n(click to hide)"
     cash_rate: -0.2
-    research: 5
+    research: 4
     apply: (element, build_only) ->
       unless build_only
         data.cash_rate += element.data.cash_rate
-      element.clicked = (x, y, button) =>
         data.research += element.data.research
+      element.clicked = (x, y, button) =>
         element\delete!
         return true
   }
@@ -313,7 +313,7 @@ icons = {
         return true
   }
   { -- 11 emergency ritual
-    trigger: {danger_increasing: 2.5}
+    trigger: {danger_increasing: 2.25}
     icon: "icons/pentagram-rose.png"
     tooltip: "Complete a ritual to reduce danger.\n${cash}, ${danger}, ${danger_rate}"
     cash: -2500
@@ -366,6 +366,20 @@ icons = {
       unless build_only
         data.cash_rate += element.data.cash_rate
         data.research_rate += element.data.research_rate
+  }
+  { -- 14 SCP never be alone
+    trigger: {scp: 0.001, multiple: true}
+    icon: "icons/smartphone.png"
+    tooltip: "SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost, ${research}\n(click to hide)"
+    cash_rate: -0.3
+    research: 6
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research += element.data.research
+      element.clicked = (x, y, button) =>
+        element\delete!
+        return true
   }
   --{
     --trigger: {cash: 16000}
