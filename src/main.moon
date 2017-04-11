@@ -48,12 +48,16 @@ icons.add_icon = (icon, build_only) ->
       elseif icon.tipOnce == nil
         tip\setText icon.tip
         tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+  print("data.icons:")
+  for key, value in ipairs data.icons
+    print(key, value)
 
 icons.fix_order = ->
   x, y = margin, margin
   data.icons = {}
   for icon in *icon_grid.child
-    table.insert data.icons, icon.id
+    unless icon.data.id == 0 -- don't save the pause button!
+      table.insert data.icons, icon.data.id
     icon\setPosition x, y
     x += margin + icon_size
     if x > icon_grid.data.w - margin - icon_size
@@ -71,6 +75,12 @@ load = ->
       icons[id].trigger.random = nil
     for id in *data.icons
       icons.add_icon(icons[id], true)
+
+    -- if old version of save data loaded, fix it
+    unless loaded_data.version
+      for id in *data.cleared_scps
+        icons.add_icon(icons[id], true)
+        table.insert, data.icons, id
 
 game_over = (reason) ->
   overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
@@ -337,6 +347,9 @@ love.quit = ->
   if exit_action == "reset_data"
     love.filesystem.remove "save.txt"
   elseif exit_action == "save_data"
+    --data.icons = {}
+    --for icon in *icon_grid.child
+    --  table.insert data.icons, icon.id
     love.filesystem.write "save.txt", serialize data
 
   return

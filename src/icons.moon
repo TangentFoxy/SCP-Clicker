@@ -177,8 +177,9 @@ icons = {
             data.agent_count += 1
         elseif button == pop.constants.right_mouse
           data.cash_rate -= element.data.cash_rate
-          data.danger_rate -= element.data.cash_rate
+          data.danger_rate -= element.data.danger_rate
           data.agent_count -= 1
+          icons[9].agent_count = data.agent_count
         return true
   }
   { -- 6 go on expedition
@@ -216,10 +217,10 @@ icons = {
           fn!
         return true
   }
-  { -- 7 the broken desert
+  { -- 7 SCP the broken desert
     trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
     icon: "icons/cracked-glass.png"
-    tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost, ${research}"
+    tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost, ${research}\n(click to hide)"
     cash_rate: -0.2
     research: 5
     apply: (element, build_only) ->
@@ -278,6 +279,7 @@ icons = {
               element\setIcon "icons/hammer-sickle-inverted.png"
               element.data.tooltip = "(ACTIVE) Hire replacement agents automatically.\n${cash_rate}"
               data.agent_rehire_enabled = true
+              element.data.agent_count = data.agent_count
             else
               data.cash_rate -= element.data.cash_rate
               element\setIcon "icons/hammer-sickle.png"
@@ -329,8 +331,8 @@ icons = {
   { -- 12 class-d personnel
     trigger: {agent_count: 40}
     icon: "icons/convict.png"
-    tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate}"
-    cash: -0.15 -- note: this is used for terminating class D's only
+    tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate} (${cash} to terminate)"
+    cash: -0.15 -- note: this is used for terminating only
     cash_rate: -0.25
     danger_rate: -0.01
     apply: (element) ->
@@ -354,7 +356,7 @@ icons = {
             data.class_d_count -= 1
         return true
   }
-  { -- 13 the plague doctor
+  { -- 13 SCP the plague doctor
     trigger: {scp: 0.10}
     icon: "icons/bird-mask.png"
     tooltip: "SCP-049 \"The Plague Doctor\"\n${cash_rate} containment cost, ${research_rate} while contained"
