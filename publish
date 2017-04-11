@@ -9,5 +9,7 @@ butler push "$latestBuildsDir/$packageName-${version}_win64.zip" guard13007/scp-
 butler push "$latestBuildsDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:osx
 butler push "$latestBuildsDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:linux
 
-sleep 10
+echo "Waiting for 30 seconds and then checking status."
+
+sleep 30
 butler status guard13007/scp-clicker

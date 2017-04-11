@@ -205,9 +205,12 @@ icons = {
   { -- 7 the broken desert
     trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
     icon: "icons/cracked-glass.png"
-    tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${research}"
+    tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost, ${research}"
+    cash_rate: -0.2
     research: 5
-    apply: (element) ->
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
       element.clicked = (x, y, button) =>
         data.research += element.data.research
         element\delete!
@@ -248,6 +251,7 @@ icons = {
       if data.agent_rehire_enabled
         element.data.update = true
         element\setIcon "icons/hammer-sickle-inverted.png"
+        element.data.tooltip = "(ACTIVE) Hire replacement agents automatically.\n${cash_rate}"
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           -- if turning off, or have cash to turn on
@@ -318,6 +322,17 @@ icons = {
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.class_d_count += 1
+  }
+  { -- 13 the plague doctor
+    trigger: {scp: 0.10}
+    icon: "icons/bird-mask.png"
+    tooltip: "SCP-049 \"The Plague Doctor\"\n${cash_rate} containment cost, ${research_rate} while contained"
+    cash_rate: -2.5
+    research_rate: 0.1
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research_rate += element.data.research_rate
   }
   --{
     --trigger: {cash: 16000}

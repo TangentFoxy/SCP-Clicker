@@ -72,6 +72,15 @@ load = ->
     for id in *data.icons
       icons.add_icon(icons[id], true)
 
+game_over = (reason) ->
+  overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
+  pop.text(overlay, "Game Over", 60)\align("center", "top")\move nil, 20
+  pop.text(overlay, reason, 24)\align "center", "center"
+  pop.text(overlay, "Click to restart.", 20)\align("center", "bottom")\move nil, -16
+  overlay.clicked = (x, y, button) =>
+    exit_action = "reset_data"
+    love.event.quit "restart"
+
 love.load = ->
   pop.load "gui"
 
@@ -157,12 +166,15 @@ love.load = ->
     @move dx, dy
 
   paused_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!, draw: false})
+  pop.box(paused_overlay) -- experiment
 
-  resume = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/cancel.png", tooltip: ""})\align nil, "center"
+  resume = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/play-button.png", tooltip: ""})\align nil, "center"
   resume\move margin, -icon_size - margin
   pop.text(resume, "Resume game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  --resume.data.draw = false --temporary, because is weirdly broken
   resume.clicked = (x, y, button) =>
     paused_overlay.data.draw = false
+    --resume.data.draw = false
     paused = false
 
   open_save_location = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/open-folder.png", tooltip: ""})\align nil, "center"
@@ -205,12 +217,13 @@ love.load = ->
   icons.add_icon({
     id: 0 -- the pause button being another icon was a bad design I think...
     trigger: {}
-    icon: "icons/holosphere.png"
+    icon: "icons/pause-button.png"
     tooltip: "Pause the game."
     apply: (element) ->
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           paused_overlay.data.draw = true
+          --resume.data.draw = true
           paused = true
           pop.focused = false
   })
@@ -246,6 +259,12 @@ love.update = (dt) ->
 
   if data.danger < 0
     data.danger = 0
+
+  if data.danger > 100
+    game_over "Danger reached 100%, the world is over."
+
+  if data.cash < 0
+    game_over "The Foundation has gone backrupt.\nNow who will protect the world? :("
 
   for icon in *icons
     unless icon.activated
