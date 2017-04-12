@@ -2,7 +2,7 @@
 
 source ./lp-config.sh
 source "$outputDir/build.number"
-version=$version-$build
+version=$version+$build
 
 butler status guard13007/scp-clicker
 
