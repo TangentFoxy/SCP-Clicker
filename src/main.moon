@@ -1,3 +1,5 @@
+version = "v0.5.0"
+
 math.randomseed(os.time())
 
 import graphics, mouse from love
@@ -7,11 +9,11 @@ pop = require "lib.pop"
 icons = require "icons"
 data = require "data"
 timers = require "timers"
+state = require "state"
 
 icon_size = 128
 margin = 8
 
-paused = true -- starting paused now because we're gonna have a title screen
 debug = false
 
 local tooltip_box, tooltip_text, icon_grid, tip, paused_overlay, exit_action
@@ -181,7 +183,7 @@ love.load = ->
   pop.text(resume, "Resume game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
   resume.clicked = (x, y, button) =>
     paused_overlay.data.draw = false
-    paused = false
+    state.paused = false
     return true
 
   open_save_location = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/open-folder.png", tooltip: ""})\align nil, "center"
@@ -208,7 +210,7 @@ love.load = ->
     data.danger -= data.danger * 0.99
     data.dirty_cheater = true -- lolololol
     paused_overlay.data.draw = false
-    paused = false
+    state.paused = false
     return true
 
   reset = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/save.png", tooltip: ""})\align "center", "center"
@@ -235,7 +237,7 @@ love.load = ->
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           paused_overlay.data.draw = true
-          paused = true
+          state.paused = true
           pop.focused = false
           return true
   })
@@ -244,12 +246,13 @@ love.load = ->
 
   title_screen = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
   title_screen.clicked = (x, y, button) =>
-    paused = false
+    state.paused = false
     title_screen\delete!
     return true
   pop.text(title_screen, "SCP Clicker", 60)\align("center", "top")\move nil, "20"
   pop.text(title_screen, "Secure, -Click-, Protect", 26)\align("center", "top")\move nil, 90
   pop.text(title_screen, "Click anywhere to begin.", 26)\align("center", "bottom")\move nil, -20
+  pop.text(title_screen, version, 16)\align("left", "bottom")\move 2
   align_grid = pop.box(title_screen, {w: icon_size*4+margin*5, h: icon_size*2+margin*3})\align("center", "center")\move nil, 40
   icon_list = shuffle love.filesystem.getDirectoryItems "icons"
   for x=1,4
@@ -258,7 +261,7 @@ love.load = ->
       pop.icon(align_grid, {w: icon_size, h: icon_size, icon: "icons/#{name}", tooltip: ""})\move (x-1)*icon_size + x*margin, (y-1)*icon_size + y*margin
 
 love.update = (dt) ->
-  if paused return
+  if state.paused return
 
   pop.update dt
 
@@ -344,6 +347,9 @@ love.mousepressed = (x, y, button) ->
 
 love.mousereleased = (x, y, button) ->
   pop.mousereleased x, y, button
+
+love.wheelmoved = (x, y) ->
+  pop.wheelmoved x, y
 
 love.keypressed = (key) ->
   if key == "escape"

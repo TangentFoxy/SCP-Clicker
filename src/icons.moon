@@ -1,8 +1,12 @@
-import round, weightedchoice from require "lib.lume"
+import round, weightedchoice, wordwrap from require "lib.lume"
+import graphics from love
+import split_newline from require "util"
 
 pop = require "lib.pop"
 data = require "data"
 timers = require "timers"
+descriptions = require "descriptions"
+state = require "state"
 
 local icons
 
@@ -73,6 +77,48 @@ icons = {
 
     (s\gsub('($%b{})', (w) -> tbl[w\sub(3, -2)] or w))
 
+  wrap: (str, width, font) ->
+    return wordwrap str, (text) -> return true if width < font\getWidth text
+
+  scp_info: (element) ->
+    state.paused = true
+    overlay = pop.box({w: graphics.getWidth! * 9/10, h: graphics.getHeight! * 9/10})\setColor(255, 255, 255, 255)\align "center", "center"
+    title = element.data.tooltip
+    if n = title\find "\n"
+      title = title\sub 1, n
+    pop.text(overlay, {hoverable: false}, title, 32)\setColor(0, 0, 0, 255)\align "center", "top"
+    display_text = pop.text(overlay, {hoverable: false}, 18)\setColor 0, 0, 0, 255
+    fullDescription = split_newline icons.wrap element.data.description\gsub("    ", ""), overlay.data.w - 8, display_text.font
+    lines, currentLine = {}, 0
+    for i=1,20
+      lines[i] = fullDescription[i]
+    newText = (table.concat lines, "\n")\gsub "\n.\n", "\n\n"
+    if "\n." == newText\sub -2
+      newText = newText\sub 1, -2
+    display_text\setText newText
+    display_text\move 4, 42
+    pop.text(overlay, {hoverable: false}, "(click to close)", 16)\setColor(0, 0, 0, 255)\align "center", "bottom"
+    overlay.clicked = (x, y, button) =>
+      state.paused = false
+      overlay\delete!
+      return true
+    overlay.wheelmoved = (x, y) =>
+      currentLine -= y
+      if currentLine < 0 or #fullDescription < 20
+        currentLine = 0
+      elseif currentLine > #fullDescription - 20
+        currentLine = #fullDescription - 20
+      lines = {}
+      for i=1,20
+        lines[i] = fullDescription[currentLine+i]
+      newText = (table.concat lines, "\n")\gsub "\n.\n", "\n\n"
+      if ".\n" == newText\sub 1, 2
+        newText = newText\sub 2
+      if "\n." == newText\sub -2
+        newText = newText\sub 1, -2
+      display_text\setText newText
+      display_text\move 4, 42
+
   choose_scp: ->
     tbl = {}
     for key, icon in ipairs icons
@@ -128,7 +174,6 @@ icons = {
       fg.update = =>
         fg\setText data.savings_accounts
         bg\setSize fg\getSize!
-      bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash
@@ -168,7 +213,6 @@ icons = {
       fg.update = =>
         fg\setText data.agent_count
         bg\setSize fg\getSize!
-      bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash_rate
@@ -228,7 +272,10 @@ icons = {
         data.cash_rate += element.data.cash_rate
         data.research += element.data.research
       element.clicked = (x, y, button) =>
-        element\delete!
+        if button == pop.constants.left_mouse
+          element\delete!
+        elseif button == pop.constants.right_mouse
+          icons.scp_info element
         return true
   }
   { -- 8 agent deaths
@@ -291,6 +338,7 @@ icons = {
     trigger: {savings_accounts: 20}
     icon: "icons/bank.png"
     tooltip: "Open a bank.\n${cash}, ${cash_multiplier} (maximum +$500/s cash)"
+    tip: "Banks require money in order to make money. Keep that in mind."
     cash: -6000
     cash_multiplier: 1/100
     apply: (element) ->
@@ -299,7 +347,6 @@ icons = {
       fg.update = =>
         fg\setText data.bank_count
         bg\setSize fg\getSize!
-      bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash
@@ -341,7 +388,6 @@ icons = {
       fg.update = =>
         fg\setText data.class_d_count
         bg\setSize fg\getSize!
-      bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash_rate
@@ -366,6 +412,10 @@ icons = {
       unless build_only
         data.cash_rate += element.data.cash_rate
         data.research_rate += element.data.research_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
   }
   { -- 14 SCP never be alone
     trigger: {scp: 0.001, multiple: true}
@@ -378,20 +428,25 @@ icons = {
         data.cash_rate += element.data.cash_rate
         data.research += element.data.research
       element.clicked = (x, y, button) =>
-        element\delete!
+        if button == pop.constants.left_mouse
+          element\delete!
+        elseif button == pop.constants.right_mouse
+          icons.scp_info element
         return true
   }
   { -- 15 automatic expeditions
     trigger: {all: {danger_decreasing: -3, scp_count: 3}}
     icon: "icons/helicopter.png"
     tooltip: "(INACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
+    tip: "Be careful about being too aggressive with your expeditions."
     cash_rate: -12
     research_rate: 0.04
     apply: (element) ->
       local recurse
       recurse = (element=pop.screen) ->
         if element.data.id and element.data.id == 6
-          element\clicked 0, 0, pop.constants.left_mouse
+          if data.cash >= element.data.cash * 1.1 -- won't activate unless you have SOME buffer zone
+            element\clicked 0, 0, pop.constants.left_mouse
         else
           for child in *element.child
             recurse child
@@ -425,6 +480,121 @@ icons = {
               element.data.update = false
         return true
   }
+  { -- 16 SCP the syringe
+    trigger: {scp: 0.08}
+    icon: "icons/syringe-2.png"
+    tooltip: "SCP-991 \"The Syringe\"\nCan be used effectively in interrogations.\n${research}, ${danger}, ${cash_rate} per Class D"
+    research: -50
+    danger: 10
+    cash_rate: 0.08
+    danger_rate: 0.0001
+    apply: (element) ->
+      element.data.class_d_count = data.class_d_count
+      bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
+      fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
+      if data.syringe_usage
+        fg\setText "ACTIVE"
+      else
+        fg\setText "INACTIVE"
+      element.update = =>
+        if data.syringe_usage
+          difference = data.class_d_count - element.data.class_d_count
+          if difference != 0
+            data.cash_rate += element.data.cash_rate * data.class_d_count
+            data.danger_rate += element.data.danger_rate * data.class_d_count
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.syringe_usage or data.research >= math.abs element.data.research
+            data.syringe_usage = not data.syringe_usage
+            if data.syringe_usage
+              data.research += element.data.research
+              data.danger += element.data.danger
+              data.cash_rate += element.data.cash_rate * data.class_d_count
+              data.danger_rate += element.data.danger_rate * data.class_d_count
+              fg\setText "ACTIVE"
+              element.data.class_d_count = data.class_d_count
+              element.data.update = true
+            else
+              data.cash_rate -= element.data.cash_rate * data.class_d_count
+              data.danger_rate -= element.data.danger_rate * data.class_d_count
+              fg\setText "INACTIVE"
+              element.data.update = false
+            bg\setSize fg\getSize!
+        elseif button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+      -- dunno why these are needed...
+      bg\setSize fg\getSize!
+      fg\align!
+  }
+  { -- 17 SCP failed werewolf
+    trigger: {scp: 0.12}
+    icon: "icons/werewolf.png"
+    tooltip: "SCP-1540 \"Failed Werewolf\"\n${cash_rate} containment cost, ${research_rate} while contained"
+    cash_rate: -3.2
+    research_rate: 0.32
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research_rate += element.data.research_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
+  { -- 18 SCP RONALD REGAN CUT UP WHILE TALKING
+    trigger: {scp: 0.15}
+    icon: "icons/video-camera.png"
+    tooltip: "SCP-1981 \"RONALD REGAN CUT UP WHILE TALKING\"\n${cash_rate} research cost, ${research_rate}\n(click to research)"
+    cash_rate: -6.2
+    research_rate: 0.4
+    apply: (element, build_only) ->
+      bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
+      fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
+      if data.ronald_regan
+        fg\setText "ACTIVE"
+      else
+        fg\setText "INACTIVE"
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.ronald_regan or data.cash >= math.abs element.data.cash_rate
+            data.ronald_regan = not data.ronald_regan
+            if data.ronald_regan
+              data.research_rate += element.data.research_rate
+              data.cash_rate += element.data.cash_rate
+              fg\setText "ACTIVE"
+            else
+              data.research_rate -= element.data.research_rate
+              data.cash_rate -= element.data.cash_rate
+              fg\setText "INACTIVE"
+            bg\setSize fg\getSize!
+        elseif button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+      -- dunno why these are needed...
+      bg\setSize fg\getSize!
+      fg\align!
+  }
+  { -- 19 SCP self-defense sugar
+    trigger: {scp: 0.25}
+    icon: "icons/amphora.png"
+    tooltip: "SCP-989 \"Self-Defense Sugar\""
+    apply: (element, build_only) ->
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
+  { -- 20 SCP the director's cut
+    trigger: {scp: 0.25}
+    icon: "icons/salt-shaker.png"
+    tooltip: "SCP-981 \"The Director's Cut\""
+    apply: (element, build_only) ->
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
   --{
     --trigger: {cash: 16000}
     -- a better source of income is needed
@@ -433,5 +603,8 @@ icons = {
 
 for i=1, #icons
   icons[i].id = i
+
+for id, description in pairs descriptions
+  icons[id].description = description[1]
 
 return icons

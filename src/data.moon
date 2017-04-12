@@ -26,6 +26,9 @@ data = {
   agent_rehire_enabled: false
   class_d_count: 0
   automatic_expeditions: false
+  syringe_usage: false
+
+  ronald_regan: false
 
   version: 1
 }
