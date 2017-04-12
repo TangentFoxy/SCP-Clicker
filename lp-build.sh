@@ -29,7 +29,7 @@ if [ $autoNumberBuilds = true ]; then
 	# store the current build number
 	echo "build=$build" > "$outputDir/build.number"
 	# set version to use new build number
-	version=$version-$build
+	version=$version+$build
 fi
 
 # check that zip and unzip are accessible
