@@ -59,23 +59,29 @@ icons = {
       return "-x$#{icons.format_commas string.format "%.2f", round math.abs(value), .01} cash"
     else
       return "+x$#{icons.format_commas string.format "%.2f", round value, .01} cash"
+  format_class_d_count: (value) ->
+    if value < 0
+      return "#{icons.format_commas value} Class D personnel"
+    else
+      return "+#{icons.format_commas value} Class D personnel"
 
   replace: (data) ->
     s = data.tooltip
-    tbl = {}
+    t = {}
 
-    tbl.cash = icons.format_cash data.cash if data.cash
-    tbl.research = icons.format_research data.research if data.research
-    tbl.danger = icons.format_danger data.danger if data.danger
-    tbl.time = icons.format_time data.time if data.time
+    t.cash = icons.format_cash data.cash if data.cash
+    t.research = icons.format_research data.research if data.research
+    t.danger = icons.format_danger data.danger if data.danger
+    t.time = icons.format_time data.time if data.time
 
-    tbl.cash_rate = icons.format_cash_rate data.cash_rate if data.cash_rate
-    tbl.research_rate = icons.format_research_rate data.research_rate if data.research_rate
-    tbl.danger_rate = icons.format_danger_rate data.danger_rate if data.danger_rate
+    t.cash_rate = icons.format_cash_rate data.cash_rate if data.cash_rate
+    t.research_rate = icons.format_research_rate data.research_rate if data.research_rate
+    t.danger_rate = icons.format_danger_rate data.danger_rate if data.danger_rate
 
-    tbl.cash_multiplier = icons.format_cash_multiplier data.cash_multiplier if data.cash_multiplier
+    t.cash_multiplier = icons.format_cash_multiplier data.cash_multiplier if data.cash_multiplier
+    t.class_d_count = icons.format_class_d_count data.class_d_count if data.class_d_count
 
-    (s\gsub('($%b{})', (w) -> tbl[w\sub(3, -2)] or w))
+    (s\gsub('($%b{})', (w) -> t[w\sub(3, -2)] or w))
 
   wrap: (str, width, font) ->
     return wordwrap str, (text) -> return true if width < font\getWidth text
@@ -217,7 +223,7 @@ icons = {
   { -- 4 expending class-d to enact emergency ritual with no other consequence
     trigger: {all: {danger: 10, class_d_count: 10}}
     icon: "icons/moebius-star.png"
-    tooltip: "Use Class D personnel to complete emergency containment rituals.\n${cash}, ${danger}, {class_d_count}"
+    tooltip: "Use Class D personnel to complete emergency containment rituals.\n${cash}, ${danger}, ${class_d_count}"
     cash: -250
     danger: -6
     class_d_count: -10
