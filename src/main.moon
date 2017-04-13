@@ -67,19 +67,36 @@ load = ->
   if loaded_text = love.filesystem.read "save.txt"
     loaded_data = deserialize loaded_text
     for key, value in pairs loaded_data
-      data[key] = value
-    for id in *data.cleared_scps
-      icons[id].trigger.scp = nil
-    for id in *data.cleared_randoms
-      icons[id].trigger.random = nil
-    for id in *data.icons
-      icons.add_icon(icons[id], true)
+      unless key == "version"
+        data[key] = value
 
     -- if old version of save data loaded, fix it
     unless loaded_data.version
       for id in *data.cleared_scps
         icons.add_icon(icons[id], true)
         table.insert, data.icons, id
+      loaded_data.version = 1
+    if loaded_data.version == 1
+      data.scp_count = #data.cleared_scps -- reset to approximately correct count
+      tmp = {}
+      for id in *data.cleared_scps
+        tmp[id] = true
+      data.cleared_scps = tmp
+      tmp = {}
+      for id in *data.cleared_randoms
+        tmp[id] = true
+      data.cleared_randoms = tmp
+      loaded_data.version = 2
+
+    -- apply loaded data
+    for id in pairs data.cleared_scps
+      unless icons[id].trigger.multiple
+        icons[id].trigger.scp = nil
+    for id in pairs data.cleared_randoms
+      unless icons[id].trigger.multiple
+        icons[id].trigger.random = nil
+    for id in *data.icons
+      icons.add_icon(icons[id], true)
 
 game_over = (reason) ->
   overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
@@ -167,7 +184,7 @@ love.load = ->
         if random! <= icon.trigger.random
           unless icon.trigger.multiple
             icon.trigger.random = nil
-            table.insert data.cleared_randoms, icon.id
+          data.cleared_randoms[icon.id] = true
           icons.add_icon icon
 
   tooltip_box = pop.box()

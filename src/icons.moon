@@ -127,8 +127,9 @@ icons = {
     scp = icons[weightedchoice tbl]
     unless scp.trigger.multiple
       scp.trigger.scp = nil
-      table.insert data.cleared_scps, scp.id
-    data.scp_count += 1
+    unless data.cleared_scps[scp.id]
+      data.scp_count += 1
+    data.cleared_scps[scp.id] = true
     return scp
 
   basic: (element) ->
@@ -417,10 +418,10 @@ icons = {
           icons.scp_info element
         return true
   }
-  { -- 14 SCP never be alone
+  { -- 14 SCP MalO (never be alone)
     trigger: {scp: 0.001, multiple: true}
     icon: "icons/smartphone.png"
-    tooltip: "SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost, ${research}\n(click to hide)"
+    tooltip: "An instance of SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost, ${research}\n(click to hide)"
     cash_rate: -0.3
     research: 6
     apply: (element, build_only) ->
@@ -595,10 +596,63 @@ icons = {
           icons.scp_info element
         return true
   }
+  { -- 21 SCP desert in a can
+    trigger: {scp: 0.006, multiple: true}
+    icon: "icons/spray.png"
+    tooltip: "An instance of SCP-622 \"Desert in a Can\"\n${cash_rate} containment cost\n(click to hide)"
+    cash_rate: -0.28
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          element\delete!
+        elseif button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
+  { -- 22 SCP book of endings
+    trigger: {scp: 0.20}
+    icon: "icons/death-note.png"
+    tooltip: "SCP-152 \"Book of Endings\"\n${cash_rate} research cost, ${research_rate}"
+    cash_rate: -7.5
+    research_rate: 5
+    apply: (element, build_only) ->
+      --TODO needs to have active/inactive options like Ronald Regan
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
+  { -- 23 SCP diet ghost
+    trigger: {}
+    --trigger: {scp: 0.002, multiple: true}
+    icon: "icons/" --TODO NEEDS AN ICON, MAKE A SODA CAN ICON!
+    tooltip: "An instance of SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost\n(click to hide)"
+    cash_rate: -0.26
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          element\delete!
+        elseif button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
+  --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
+  --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
+  --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)
+  --TODO make a Class D termination policy that when active reduces danger but increases cost on a regularly timed basis
+  --     it also fluctuates the count of Class D personnel by randomly clicking hire / unhire, using a sine function to make a steady curve
+  --TODO make a vault icon that is used when you have more than 5 SCPs that is needed to contain more SCPs (build site)
   --{
     --trigger: {cash: 16000}
     -- a better source of income is needed
   --}
+  --TODO get semver.lua and cjson or something like that
+  --TODO getting and terminating class D's should be in 5's
+  --      adjust values to represent five and increase/decrease by five (if can't for some reason, decrease by however many can)
 }
 
 for i=1, #icons

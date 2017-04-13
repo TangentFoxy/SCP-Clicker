@@ -14,6 +14,7 @@ data = {
   danger_multiplier: 1/8
 
   icons: {}
+  -- cleared really just means "has triggered at least once before"
   cleared_scps: {}
   cleared_randoms: {}
 
@@ -27,10 +28,9 @@ data = {
   class_d_count: 0
   automatic_expeditions: false
   syringe_usage: false
-
   ronald_regan: false
 
-  version: 1
+  version: 2
 }
 
 return data
