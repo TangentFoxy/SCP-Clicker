@@ -1,5 +1,5 @@
 v = require "lib.semver"
-version = v "0.7.0"
+version = v "0.7.1"
 
 math.randomseed(os.time())
 
@@ -291,7 +291,7 @@ love.update = (dt) ->
     receive = love.thread.getChannel "receive"
     if receive\getCount! > 0
       latest_version = receive\demand!
-      if version_display
+      if version_display and version_display.parent
         local display_string
         if latest_version != "error"
           latest_version = v latest_version
