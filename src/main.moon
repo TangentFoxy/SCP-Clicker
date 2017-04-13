@@ -291,7 +291,13 @@ love.update = (dt) ->
     if receive\getCount! > 0
       version_display\setText(receive\demand!)\move 2
 
-  if state.paused return
+  if state.paused
+    -- find and delete click elements!
+    for i=#pop.screen.child, 1, -1
+      if pop.screen.child[i].data.type == "click"
+        pop.screen.child[i]\delete!
+
+    return
 
   pop.update dt
 
@@ -376,7 +382,8 @@ love.mousepressed = (x, y, button) ->
   pop.mousepressed x, y, button
 
 love.mousereleased = (x, y, button) ->
-  pop.mousereleased x, y, button
+  pop.mousereleased x, y, button --NOTE click handled is not being returned!!
+  pop.click(24)\move x + random(-8, 4), y + random(-20, -14)
 
 love.wheelmoved = (x, y) ->
   pop.wheelmoved x, y

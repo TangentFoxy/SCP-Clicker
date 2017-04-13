@@ -8,6 +8,7 @@ class icon extends element
   new: (@parent, @data={}, icon="") =>
     super @parent, @data
 
+    @data.type = "icon"
     @data.icon = icon unless @data.icon
 
     @icon = graphics.newImage @data.icon

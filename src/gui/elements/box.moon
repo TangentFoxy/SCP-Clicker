@@ -6,6 +6,8 @@ class box extends element
   new: (@parent, @data={}, w, h) =>
     super @parent, @data
 
+    @data.type = "box"
+
     unless @data.color
       @data.color = {0, 0, 0, 255}
 

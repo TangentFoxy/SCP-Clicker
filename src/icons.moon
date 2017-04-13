@@ -446,7 +446,7 @@ icons = {
       local recurse
       recurse = (element=pop.screen) ->
         if element.data.id and element.data.id == 6
-          if data.cash >= element.data.cash * 1.1 -- won't activate unless you have SOME buffer zone
+          if data.cash >= math.abs element.data.cash * 1.25 -- won't activate unless you have $6,250 cash
             element\clicked 0, 0, pop.constants.left_mouse
         else
           for child in *element.child
