@@ -646,6 +646,19 @@ icons = {
           icons.scp_info element
         return true
   }
+  { -- 24 SCP book of dreams
+    trigger: {scp: 0.30}
+    icon: "icons/black-book.png"
+    tooltip: "SCP-1230 \"Book of Dreams\"\n${cash_rate} containment cost"
+    cash_rate: -0.02
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
   --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
   --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)

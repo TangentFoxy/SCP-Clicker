@@ -142,11 +142,37 @@ love.load = ->
     return result
 
   cash_display.update = =>
-    cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash, .01}"
+    if data.cash >= 100000000000000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000000000000, .01}Q"
+    elseif data.cash >= 100000000000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000000000, .01}q"
+    elseif data.cash >= 100000000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000000, .01}t"
+    elseif data.cash >= 100000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000, .01}b"
+    elseif data.cash >= 100000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000, .01}m"
+    elseif data.cash >= 100000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000, .01}k"
+    else
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash, .01}"
     cash_display\move margin, -margin --temporary manual margin
 
   research_display.update = =>
-    research_display\setText "Research: #{format_commas string.format "%.2f", round data.research, .01}"
+    if data.research >= 100000000000000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000000000000, .01}Q"
+    elseif data.research >= 100000000000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000000000, .01}q"
+    elseif data.research >= 100000000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000000, .01}t"
+    elseif data.research >= 100000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000, .01}b"
+    elseif data.research >= 100000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000, .01}m"
+    elseif data.research >= 100000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000, .01}k"
+    else
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research, .01}"
     research_display\move -margin, -margin --temporary manual margin
 
   danger_display.update = =>
