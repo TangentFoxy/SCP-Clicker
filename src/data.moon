@@ -29,6 +29,7 @@ data = {
   automatic_expeditions: false
   syringe_usage: false
   ronald_regan: false
+  book_of_endings: false
 
   check_for_updates: true
   version: 2

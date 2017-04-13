@@ -140,6 +140,33 @@ icons = {
         data.danger += element.data.danger if element.data.danger
       return true
 
+  toggleable: (element, data_key) ->
+    bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
+    fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
+    if data[data_key]
+      fg\setText "ACTIVE"
+    else
+      fg\setText "INACTIVE"
+    element.clicked = (x, y, button) =>
+      if button == pop.constants.left_mouse
+        if data[data_key] or data.cash >= math.abs element.data.cash_rate
+          data[data_key] = not data[data_key]
+          if data[data_key]
+            data.research_rate += element.data.research_rate
+            data.cash_rate += element.data.cash_rate
+            fg\setText "ACTIVE"
+          else
+            data.research_rate -= element.data.research_rate
+            data.cash_rate -= element.data.cash_rate
+            fg\setText "INACTIVE"
+          bg\setSize fg\getSize!
+      elseif button == pop.constants.right_mouse
+        icons.scp_info element
+      return true
+    -- dunno why these are needed...
+    bg\setSize fg\getSize!
+    fg\align!
+
   { -- 1 get cash
     trigger: {danger: 0.0215}
     icon: "icons/banknote.png"
@@ -280,7 +307,7 @@ icons = {
         return true
   }
   { -- 8 agent deaths
-    trigger: {random: 0.8/60, multiple: true} -- 0.8% chance per minute intended, seems to be per second
+    trigger: {random: 0.8/60, multiple: true} -- 0.8% chance per minute intended, seems to be per second or higher
     icon: "icons/morgue-feet.png"
     tooltip: "An agent has died.\n(click to dismiss)"
     tip: "When agents die, things get dangerous..."
@@ -301,10 +328,12 @@ icons = {
   { -- 9 automatic agent re-hire
     trigger: {agent_count: 30}
     icon: "icons/hammer-sickle.png"
-    tooltip: "(INACTIVE) Hire replacement agents automatically.\n${cash_rate}"
+    tooltip: "Hire replacement agents automatically.\n${cash_rate}"
     cash_rate: -4
     update: false -- inactive by default
     apply: (element) ->
+      bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       element.data.agent_count = data.agent_count
       element.update = =>
         if data.agent_count < element.data.agent_count
@@ -314,9 +343,10 @@ icons = {
         elseif data.agent_count > element.data.agent_count
           element.data.agent_count = data.agent_count
       if data.agent_rehire_enabled
+        fg\setText "ACTIVE"
         element.data.update = true
-        element\setIcon "icons/hammer-sickle-inverted.png"
-        element.data.tooltip = "(ACTIVE) Hire replacement agents automatically.\n${cash_rate}"
+      else
+        fg\setText "INACTIVE"
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           -- if turning off, or have cash to turn on
@@ -324,16 +354,18 @@ icons = {
             element.data.update = not element.data.update
             if element.data.update
               data.cash_rate += element.data.cash_rate
-              element\setIcon "icons/hammer-sickle-inverted.png"
-              element.data.tooltip = "(ACTIVE) Hire replacement agents automatically.\n${cash_rate}"
-              data.agent_rehire_enabled = true
               element.data.agent_count = data.agent_count
+              data.agent_rehire_enabled = true
+              fg\setText "ACTIVE"
             else
               data.cash_rate -= element.data.cash_rate
-              element\setIcon "icons/hammer-sickle.png"
-              element.data.tooltip = "(INACTIVE) Hire replacement agents automatically.\n${cash_rate}"
               data.agent_rehire_enabled = false
+              fg\setText "INACTIVE"
+            bg\setSize fg\getSize!
         return true
+      -- dunno why these are needed...
+      bg\setSize fg\getSize!
+      fg\align!
   }
   { -- 10 open banks
     trigger: {savings_accounts: 20}
@@ -438,11 +470,13 @@ icons = {
   { -- 15 automatic expeditions
     trigger: {all: {danger_decreasing: -3, scp_count: 3}}
     icon: "icons/helicopter.png"
-    tooltip: "(INACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
+    tooltip: "Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
     tip: "Be careful about being too aggressive with your expeditions."
     cash_rate: -12
     research_rate: 0.04
     apply: (element) ->
+      bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       local recurse
       recurse = (element=pop.screen) ->
         if element.data.id and element.data.id == 6
@@ -456,10 +490,10 @@ icons = {
           recurse!
       if data.automatic_expeditions
         element.data.update = true
-        element\setIcon "icons/helicopter-inverted.png"
-        element.data.tooltip = "(ACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
+        fg\setText "ACTIVE"
       else
         element.data.update = false
+        fg\setText "INACTIVE"
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           -- if turning off, or have cash to turn on
@@ -468,18 +502,18 @@ icons = {
             if element.data.update
               data.cash_rate += element.data.cash_rate
               data.research_rate += element.data.research_rate
-              element\setIcon "icons/helicopter-inverted.png"
-              element.data.tooltip = "(ACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
               data.automatic_expeditions = true
-              element.data.update = true
+              fg\setText "ACTIVE"
             else
               data.cash_rate -= element.data.cash_rate
               data.research_rate -= element.data.research_rate
-              element\setIcon "icons/helicopter.png"
-              element.data.tooltip = "(INACTIVE) Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
               data.automatic_expeditions = false
-              element.data.update = false
+              fg\setText "INACTIVE"
+            bg\setSize fg\getSize!
         return true
+      -- dunno why these are needed...
+      bg\setSize fg\getSize!
+      fg\align!
   }
   { -- 16 SCP the syringe
     trigger: {scp: 0.08}
@@ -550,31 +584,7 @@ icons = {
     cash_rate: -6.2
     research_rate: 0.4
     apply: (element, build_only) ->
-      bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
-      fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
-      if data.ronald_regan
-        fg\setText "ACTIVE"
-      else
-        fg\setText "INACTIVE"
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          if data.ronald_regan or data.cash >= math.abs element.data.cash_rate
-            data.ronald_regan = not data.ronald_regan
-            if data.ronald_regan
-              data.research_rate += element.data.research_rate
-              data.cash_rate += element.data.cash_rate
-              fg\setText "ACTIVE"
-            else
-              data.research_rate -= element.data.research_rate
-              data.cash_rate -= element.data.cash_rate
-              fg\setText "INACTIVE"
-            bg\setSize fg\getSize!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
-      -- dunno why these are needed...
-      bg\setSize fg\getSize!
-      fg\align!
+      icons.toggleable element, "ronald_regan"
   }
   { -- 19 SCP self-defense sugar
     trigger: {scp: 0.25}
@@ -618,11 +628,7 @@ icons = {
     cash_rate: -7.5
     research_rate: 5
     apply: (element, build_only) ->
-      --TODO needs to have active/inactive options like Ronald Regan
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.toggleable element, "book_of_endings"
   }
   { -- 23 SCP diet ghost
     trigger: {}
@@ -641,7 +647,6 @@ icons = {
         return true
   }
   --TODO make agent re-hiring and automatic expeditions use the active/inactive feature instead of switching the icon
-  --TODO make the active/inactive feature a function that can be called to have it set up on an icon instead of having to manually make it each time
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
   --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
   --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)
