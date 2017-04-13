@@ -287,23 +287,43 @@ love.load = ->
       pop.icon(align_grid, {w: icon_size, h: icon_size, icon: "icons/#{name}", tooltip: ""})\move (x-1)*icon_size + x*margin, (y-1)*icon_size + y*margin
 
 love.update = (dt) ->
-  if version_display and data.check_for_updates
+  if data.check_for_updates
     receive = love.thread.getChannel "receive"
     if receive\getCount! > 0
-      local display_string
       latest_version = receive\demand!
-      if latest_version != "error"
-        latest_version = v latest_version
-        latest_version.build = nil
-        if version == latest_version
-          display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
-        elseif version > latest_version
-          display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
+      if version_display
+        local display_string
+        if latest_version != "error"
+          latest_version = v latest_version
+          latest_version.build = nil
+          if version == latest_version
+            display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
+          elseif version > latest_version
+            display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
+          else
+            display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
         else
-          display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
+          display_string = "Current version: #{version} Latest version: Connection error while getting latest version. Trying again..."
+        version_display\setText(display_string)\move 2
       else
-        display_string = "Current version: #{version} Latest version: Connection error while getting latest version. Trying again..."
-      version_display\setText(display_string)\move 2
+        if latest_version != "error"
+          latest_version = v latest_version
+          latest_version.build = nil
+          if version < latest_version
+            icons.add_icon({
+              id: 0 -- any UI element is "ID" zero
+              trigger: {}
+              icon: "icons/world.png"
+              tooltip: "There is a new version of SCP Clicker available: #{latest_version}\nClick to save, quit, and go to Itch.io.\nRight-click to dismiss."
+              apply: (element) ->
+                element.clicked = (x, y, button) =>
+                  if button == pop.constants.left_mouse
+                    love.system.openURL "https://guard13007.itch.io/scp-clicker"
+                    exit_action = "save_data"
+                    love.event.quit!
+                  elseif button == pop.constants.right_mouse
+                    @delete!
+            })
 
   if state.paused
     -- find and delete click elements!
