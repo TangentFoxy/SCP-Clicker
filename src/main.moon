@@ -1,5 +1,5 @@
 v = require "lib.semver"
-version = v "0.7.1"
+version = v "0.8.0"
 
 math.randomseed(os.time())
 
@@ -51,6 +51,8 @@ icons.add_icon = (icon, build_only) ->
       elseif icon.tipOnce == nil
         tip\setText icon.tip
         tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+    return true -- an icon was set
+  return false -- an icon was not set
 
 icons.fix_order = ->
   x, y = margin, margin
@@ -209,10 +211,11 @@ love.load = ->
     for icon in *icons
       if icon.trigger.random
         if random! <= icon.trigger.random
-          unless icon.trigger.multiple
-            icon.trigger.random = nil
-          data.cleared_randoms[icon.id] = true
-          icons.add_icon icon
+          if icons.add_icon icon
+            unless icon.trigger.multiple
+              icon.trigger.random = nil
+            data.cleared_randoms[icon.id] = true
+          break
 
   tooltip_box = pop.box()
   tooltip_text = pop.text(tooltip_box, 20)

@@ -214,18 +214,22 @@ icons = {
           data.savings_accounts -= 1
         return true
   }
-  { -- 4
-    trigger: {}
-    icon: "icons/pentagram-rose.png"
-    tooltip: "Use Class D personnel to complete containment rituals.\n${cash}, ${danger}"
-    cash: -80
+  { -- 4 expending class-d to enact emergency ritual with no other consequence
+    trigger: {all: {danger: 10, class_d_count: 10}}
+    icon: "icons/moebius-star.png"
+    tooltip: "Use Class D personnel to complete emergency containment rituals.\n${cash}, ${danger}, {class_d_count}"
+    cash: -250
     danger: -6
+    class_d_count: -10
     apply: (element) ->
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
-          if data.cash >= math.abs(element.data.cash) and data.danger > 0.1
-            data.cash += element.data.cash
+          if data.cash >= math.abs(element.data.cash) and data.class_d_count > math.abs(element.data.class_d_count) + element.data.class_d_count * icons[12].cash and data.danger > 0.1
+            data.cash += element.data.cash - icons[12].cash * element.data.class_d_count -- negative times negative, but needs to be negative, so subtracted
+            data.cash_rate += icons[12].cash_rate * element.data.class_d_count -- two negatives being multiplied, so we add it
             data.danger += element.data.danger
+            data.danger_rate += icons[12].danger_rate * element.data.class_d_count
+            data.class_d_count += element.data.class_d_count -- adding negative to remove it
         return true
   }
   { -- 5 hire agent
@@ -657,6 +661,49 @@ icons = {
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
+        return true
+  }
+  { -- 25 the clockworks
+    trigger: {scp: 0.15}
+    icon: "icons/gear-hammer.png"
+    tooltip: "SCP-914 \"The Clockworks\"\n${cash_rate} containment cost, ${research_rate} while contained, ${danger_rate}"
+    cash_rate: -2
+    research_rate: 0.6
+    danger_rate: 0.02
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research_rate += element.data.research_rate
+        data.danger_rate += element.data.danger_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+        return true
+  }
+  { -- 26 clockwork-caused breach
+    trigger: {random: 0.001/60, multiple: true} -- no idea what rate this is
+    icon: "icons/clockwork.png"
+    tooltip: "Containment breach caused by SCP-914!\n${cash_rate} until contained, ${danger_rate} until contained\n${cash} to attempt containment"
+    tip: "Breaches can escalate danger and cause a loss pretty quickly. Be wary, and stop them quickly."
+    tipOnce: true
+    cash_rate: -40
+    danger_rate: 1.5
+    cash: -10000
+    apply: (element, build_only) ->
+      unless build_only
+        if data.cleared_scps[25] -- if the SCP has been found
+          data.cash_rate += element.data.cash_rate
+          data.danger_rate += element.data.danger_rate
+        else
+          element\delete!
+          return false --cancel, we don't have it
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.cash >= math.abs element.data.cash
+            data.cash += element.data.cash
+            data.cash_rate -= element.data.cash_rate
+            data.danger_rate -= element.data.danger_rate
+            element\delete!
         return true
   }
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
