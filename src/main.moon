@@ -1,4 +1,5 @@
-version = "0.6.0"
+v = require "lib.semver"
+version = v "0.7.0"
 
 math.randomseed(os.time())
 
@@ -270,14 +271,14 @@ love.load = ->
   pop.text(title_screen, "Secure, -Click-, Protect", 26)\align("center", "top")\move nil, 90
   pop.text(title_screen, "Click anywhere to begin.", 26)\align("center", "bottom")\move nil, -20
   if data.check_for_updates
-    version_display = pop.text(title_screen, "Current version: "..version.." Latest version: Checking for latest version...", 16)\align("left", "bottom")\move 2
+    version_display = pop.text(title_screen, "Current version: #{version} Latest version: Checking for latest version...", 16)\align("left", "bottom")\move 2
     thread = love.thread.newThread "version-check.lua"
     send = love.thread.getChannel "send"
     receive = love.thread.getChannel "receive"
     thread\start!
     send\push version
   else
-    version_display = pop.text(title_screen, "Current version: "..version, 16)\align("left", "bottom")\move 2
+    version_display = pop.text(title_screen, "Current version: #{version}", 16)\align("left", "bottom")\move 2
   align_grid = pop.box(title_screen, {w: icon_size*4+margin*5, h: icon_size*2+margin*3})\align("center", "center")\move nil, 40
   icon_list = shuffle love.filesystem.getDirectoryItems "icons"
   for x=1,4
@@ -289,7 +290,20 @@ love.update = (dt) ->
   if version_display and data.check_for_updates
     receive = love.thread.getChannel "receive"
     if receive\getCount! > 0
-      version_display\setText(receive\demand!)\move 2
+      local display_string
+      latest_version = receive\demand!
+      if latest_version != "error"
+        latest_version = v latest_version
+        latest_version.build = nil
+        if version == latest_version
+          display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
+        elseif version > latest_version
+          display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
+        else
+          display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
+      else
+        display_string = "Current version: #{version} Latest version: Connection error while getting latest version. Trying again..."
+      version_display\setText(display_string)\move 2
 
   if state.paused
     -- find and delete click elements!

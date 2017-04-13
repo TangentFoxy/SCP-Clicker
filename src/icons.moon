@@ -646,7 +646,6 @@ icons = {
           icons.scp_info element
         return true
   }
-  --TODO make agent re-hiring and automatic expeditions use the active/inactive feature instead of switching the icon
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
   --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
   --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)
@@ -657,7 +656,6 @@ icons = {
     --trigger: {cash: 16000}
     -- a better source of income is needed
   --}
-  --TODO get semver.lua and cjson or something like that
   --TODO getting and terminating class D's should be in 5's
   --      adjust values to represent five and increase/decrease by five (if can't for some reason, decrease by however many can)
 }
