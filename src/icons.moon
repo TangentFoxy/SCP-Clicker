@@ -640,6 +640,8 @@ icons = {
           icons.scp_info element
         return true
   }
+  --TODO make agent re-hiring and automatic expeditions use the active/inactive feature instead of switching the icon
+  --TODO make the active/inactive feature a function that can be called to have it set up on an icon instead of having to manually make it each time
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
   --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
   --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)

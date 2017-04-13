@@ -30,6 +30,7 @@ data = {
   syringe_usage: false
   ronald_regan: false
 
+  check_for_updates: true
   version: 2
 }
 
