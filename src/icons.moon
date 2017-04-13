@@ -109,7 +109,7 @@ icons = {
       overlay\delete!
       return true
     overlay.wheelmoved = (x, y) =>
-      currentLine -= y
+      currentLine -= math.floor y -- just in case it is possible to get a non-integer value
       if currentLine < 0 or #fullDescription < 20
         currentLine = 0
       elseif currentLine > #fullDescription - 20
@@ -641,9 +641,8 @@ icons = {
       icons.toggleable element, "book_of_endings"
   }
   { -- 23 SCP diet ghost
-    trigger: {}
-    --trigger: {scp: 0.002, multiple: true}
-    icon: "icons/" --TODO NEEDS AN ICON, MAKE A SODA CAN ICON!
+    trigger: {scp: 0.002, multiple: true}
+    icon: "icons/soda-can.png"
     tooltip: "An instance of SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost\n(click to hide)"
     cash_rate: -0.26
     apply: (element, build_only) ->

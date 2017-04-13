@@ -39,8 +39,17 @@ icons.add_icon = (icon, build_only) ->
     icon = deepcopy icon
   icon.w = icon_size
   icon.h = icon_size
-  if false != icon.apply(pop.icon(icon_grid, icon)\move(x * (icon_size + margin) + margin, y * (icon_size + margin) + margin), build_only)
+  element = pop.icon(icon_grid, icon)\move(x * (icon_size + margin) + margin, y * (icon_size + margin) + margin)
+  if false != icon.apply(element, build_only)
     icon.activated = true -- make sure icons are only added once when triggered
+    element.wheelmoved = (x, y) =>
+      icon_grid\wheelmoved x, y
+    for child in *element.child
+      child.data.hoverable = false
+    --_, y = element\getPosition!
+    --if y > icon_grid.data.h - margin*2
+    --  element\setPosition -512, -512 -- hide it, it doesn't fit!
+    icon_grid\wheelmoved 0, 0
     unless build_only
       if icon.id != 0 -- don't save the pause button!
         table.insert data.icons, icon.id
@@ -56,16 +65,21 @@ icons.add_icon = (icon, build_only) ->
   return false -- an icon was not set
 
 icons.fix_order = ->
-  x, y = margin, margin
-  data.icons = {}
-  for icon in *icon_grid.child
-    unless icon.data.id == 0 -- don't save the pause button!
-      table.insert data.icons, icon.data.id
-    icon\setPosition x, y
-    x += margin + icon_size
-    if x > icon_grid.data.w - margin - icon_size
-      x = margin
-      y += margin + icon_size
+  icon_grid\wheelmoved 0, 0
+
+  if false
+    x, y = margin, margin
+    data.icons = {}
+    for icon in *icon_grid.child
+      unless icon.data.id == 0 -- don't save UI elements
+        table.insert data.icons, icon.data.id
+      icon\setPosition x, y
+      x += margin + icon_size
+      if x > icon_grid.data.w - margin - icon_size
+        x = margin
+        y += margin + icon_size
+        if y > icon_grid.data.h - margin -- hide it, it doesn't fit!
+          y += 512
 
 load = ->
   if loaded_text = love.filesystem.read "settings.txt"
@@ -137,6 +151,28 @@ love.load = ->
     h: grid_height * (icon_size + margin) + margin
     :grid_width, :grid_height
   })\setColor(255, 255, 255, 255)\align "center"
+  icon_grid.data.currentLine = 0
+  icon_grid.wheelmoved = (x, y) =>
+    lineWidth = math.floor icon_grid.data.w / (icon_size + margin)
+    lines = 1 + math.floor #icon_grid.child / ( lineWidth )
+    @data.currentLine -= math.floor y
+    if @data.currentLine < 0 or lines < 4
+      @data.currentLine = 0
+    elseif @data.currentLine > lines - 3
+      @data.currentLine = lines - 3
+    x, y = margin, margin
+    for icon in *@child
+      icon\setPosition -512, -512 -- safely off-screen
+    for i = 1 + @data.currentLine * lineWidth, (@data.currentLine + 3) * lineWidth
+      if icon = @child[i]
+        if y > icon_grid.data.h - margin
+          icon\setPosition -512, -512 -- safely off-screen
+        else
+          icon\setPosition x, y
+        x += margin + icon_size
+        if x > icon_grid.data.w - margin - icon_size
+          x = margin
+          y += margin + icon_size
 
   cash_display = pop.text({fontSize: 20, update: true})\align "left", "bottom"
   research_display = pop.text({fontSize: 20, update: true})\align "right", "bottom"
@@ -495,6 +531,8 @@ love.keypressed = (key) ->
     love.event.quit!
   elseif key == "d"
     debug = not debug
+  elseif key == "a" and debug
+    icons.add_icon icons[8]
 
 love.quit = ->
   if exit_action == "reset_data"
