@@ -12,6 +12,7 @@ body, status = http.request "http://104.236.139.220:16343/get/https://itch.io/ap
 if status == 200
   latest_version = v (json.decode body).latest
   if current_version == latest_version
+    latest_version.build = nil
     send\push "Current version: #{tostring current_version} Latest version: #{tostring latest_version} You have the latest version. :D"
   else
     send\push "Current version: #{tostring current_version} Latest version: #{tostring latest_version} There is a newer version available!"
