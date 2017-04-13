@@ -31,8 +31,7 @@ data = {
   ronald_regan: false
   book_of_endings: false
 
-  check_for_updates: true
-  version: 2
+  version: 3
 }
 
 return data

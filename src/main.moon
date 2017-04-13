@@ -9,6 +9,7 @@ import round, random, serialize, deserialize, shuffle from require "lib.lume"
 pop = require "lib.pop"
 icons = require "icons"
 data = require "data"
+settings = require "settings"
 timers = require "timers"
 state = require "state"
 
@@ -67,6 +68,11 @@ icons.fix_order = ->
       y += margin + icon_size
 
 load = ->
+  if loaded_text = love.filesystem.read "settings.txt"
+    loaded_settings = deserialize loaded_text
+    for key, value in pairs loaded_settings
+      settings[key] = value
+
   if loaded_text = love.filesystem.read "save.txt"
     loaded_data = deserialize loaded_text
     for key, value in pairs loaded_data
@@ -90,6 +96,10 @@ load = ->
         tmp[id] = true
       data.cleared_randoms = tmp
       loaded_data.version = 2
+    if loaded_data.version == 2
+      settings.check_for_updates = loaded_data.check_for_updates
+      loaded_data.version = 3
+      loaded_data.check_for_updates = nil
 
     -- apply loaded data
     for id in pairs data.cleared_scps
@@ -223,7 +233,6 @@ love.load = ->
     @move dx, dy
 
   paused_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!, draw: false})
-  pop.box(paused_overlay) -- experiment
 
   resume = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/play-button.png", tooltip: ""})\align nil, "center"
   resume\move margin, -icon_size - margin
@@ -233,43 +242,72 @@ love.load = ->
     state.paused = false
     return true
 
-  open_save_location = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/open-folder.png", tooltip: ""})\align nil, "center"
-  open_save_location\move margin
-  pop.text(open_save_location, "Open saved data location.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
-  open_save_location.clicked = (x, y, button) =>
-    love.system.openURL "file://" .. love.filesystem.getSaveDirectory!
-    return true
+  options_button = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/cog.png", tooltip: ""})\align "center", "center"
+  options_button\move icon_size / 2, -icon_size - margin
+  pop.text(options_button, "Options / Data", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  options_button.clicked = (x, y, button) =>
+    options_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
+
+    back_button = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/anticlockwise-rotation.png", tooltip: ""})\align nil, "center"
+    back_button\move margin, -icon_size - margin
+    pop.text(back_button, "Back to pause menu.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    back_button.clicked = (x, y, button) =>
+      options_overlay\delete!
+      return true
+
+    open_save_location = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/open-folder.png", tooltip: ""})\align nil, "center"
+    open_save_location\move margin
+    pop.text(open_save_location, "Open saved data location.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    open_save_location.clicked = (x, y, button) =>
+      love.system.openURL "file://" .. love.filesystem.getSaveDirectory!
+      return true
+
+    debug_button = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/rune-sword.png", tooltip: ""})\align "center", "center"
+    debug_button\move icon_size / 2, -icon_size - margin
+    pop.text(debug_button, "Debug tools (cheats).", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    debug_button.clicked = (x, y, button) =>
+      data.cash += 50000
+      data.research += 10
+      data.danger -= data.danger * 0.99
+      data.dirty_cheater = true -- lolololol
+      paused_overlay.data.draw = false
+      state.paused = false
+      options_overlay\delete!
+      return true
+
+    reset = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/save.png", tooltip: ""})\align "center", "center"
+    reset\move icon_size / 2
+    pop.text(reset, "Reset game data.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    reset.clicked = (x, y, button) =>
+      exit_action = "reset_data"
+      love.event.quit "restart"
+      --return true
+
+    toggle_version_check = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/aerial-signal.png", tooltip: ""})\align nil, "center"
+    toggle_version_check\move margin, icon_size + margin
+    local version_check_text
+    if settings.check_for_updates
+      version_check_text = pop.text(toggle_version_check, "Disable version checking.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    else
+      version_check_text = pop.text(toggle_version_check, "Enable version checking.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    toggle_version_check.clicked = (x, y, button) =>
+      settings.check_for_updates = not settings.check_for_updates
+      if settings.check_for_updates
+        version_check_text\setText("Disable version checking.")\move icon_size + margin
+      else
+        version_check_text\setText("Enable version checking.")\move icon_size + margin
+      return true
 
   exit = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/power-button.png", tooltip: ""})\align nil, "center"
-  exit\move margin, icon_size + margin
+  exit\move margin--, icon_size + margin
   pop.text(exit, "Save and exit game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
   exit.clicked = (x, y, button) =>
     exit_action = "save_data"
     love.event.quit!
     --return true
 
-  debug_button = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/rune-sword.png", tooltip: ""})\align "center", "center"
-  debug_button\move icon_size / 2, -icon_size - margin
-  pop.text(debug_button, "Debug tools (cheats).", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
-  debug_button.clicked = (x, y, button) =>
-    data.cash += 50000
-    data.research += 10
-    data.danger -= data.danger * 0.99
-    data.dirty_cheater = true -- lolololol
-    paused_overlay.data.draw = false
-    state.paused = false
-    return true
-
-  reset = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/save.png", tooltip: ""})\align "center", "center"
-  reset\move icon_size / 2
-  pop.text(reset, "Reset game data.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
-  reset.clicked = (x, y, button) =>
-    exit_action = "reset_data"
-    love.event.quit "restart"
-    --return true
-
   visit_webpage = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/world.png"})\align "center", "center"
-  visit_webpage\move icon_size / 2, icon_size + margin
+  visit_webpage\move icon_size / 2--, icon_size + margin
   pop.text(visit_webpage, "Visit website.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
   visit_webpage.clicked = (x, y, button) =>
     love.system.openURL "https://guard13007.itch.io/scp-clicker"
@@ -299,7 +337,7 @@ love.load = ->
   pop.text(title_screen, "SCP Clicker", 60)\align("center", "top")\move nil, "20"
   pop.text(title_screen, "Secure, -Click-, Protect", 26)\align("center", "top")\move nil, 90
   pop.text(title_screen, "Click anywhere to begin.", 26)\align("center", "bottom")\move nil, -20
-  if data.check_for_updates
+  if settings.check_for_updates
     version_display = pop.text(title_screen, "Current version: #{version} Latest version: Checking for latest version...", 16)\align("left", "bottom")\move 2
     thread = love.thread.newThread "version-check.lua"
     send = love.thread.getChannel "send"
@@ -316,7 +354,7 @@ love.load = ->
       pop.icon(align_grid, {w: icon_size, h: icon_size, icon: "icons/#{name}", tooltip: ""})\move (x-1)*icon_size + x*margin, (y-1)*icon_size + y*margin
 
 love.update = (dt) ->
-  if data.check_for_updates
+  if settings.check_for_updates
     receive = love.thread.getChannel "receive"
     if receive\getCount! > 0
       latest_version = receive\demand!
@@ -466,5 +504,7 @@ love.quit = ->
     --for icon in *icon_grid.child
     --  table.insert data.icons, icon.id
     love.filesystem.write "save.txt", serialize data
+
+  love.filesystem.write "settings.txt", serialize settings
 
   return
