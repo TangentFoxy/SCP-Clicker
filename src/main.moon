@@ -1,5 +1,5 @@
 v = require "lib.semver"
-version = v "0.8.0"
+version = v "0.8.1-jam-final"
 
 math.randomseed(os.time())
 
@@ -452,7 +452,7 @@ love.update = (dt) ->
   if data.danger > 100
     game_over "Danger reached 100%, the world is over."
 
-  if data.cash < 0
+  if data.cash < -100
     game_over "The Foundation has gone backrupt.\nNow who will protect the world? :("
 
   for icon in *icons
@@ -484,10 +484,10 @@ love.update = (dt) ->
       job += 1
 
   if data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) < -20 or data.cash < 60
-    tip\setText "Be careful, if you go below $0, the Foundation goes backrupt. Game over."
+    tip\setText "Be careful, if you go below -$100, the Foundation goes backrupt. Game over."
     tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
   elseif data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) > 0 or data.cash > 1200
-    if tip.data.text == "Be careful, if you go below $0, the Foundation goes backrupt. Game over."
+    if tip.data.text == "Be careful, if you go below -$100, the Foundation goes backrupt. Game over."
       tip\setText ""
 
   if pop.hovered
