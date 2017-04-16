@@ -714,9 +714,10 @@ icons = {
   { -- 27 SCP best of the 5th dimension
     trigger: {random: 0.01/60}   -- 1% per minute
     icon: "icons/compact-disc.png"
-    tooltip: "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n0/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
+    tooltip: "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n0/3125 disks researched, ${cash} research cost, ${research}, ${danger}\n(click to research)"
     cash: -15
     research: 10
+    danger: 2.5
     apply: (element, build_only) ->
       update_cash = ->
         icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.65 + 1.05 ^ (data.scp092_researched_count / 25) - 55)
@@ -726,6 +727,7 @@ icons = {
           if data.scp092_researched_count < 3124 and data.cash >= math.abs element.data.cash
             data.cash += element.data.cash
             data.research += element.data.research
+            data.danger += element.data.danger
             data.scp092_researched_count += 1
             update_cash!
             if data.scp092_researched_count == 3125
