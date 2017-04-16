@@ -131,7 +131,12 @@ icons = {
       if icon.trigger.scp
         tbl[key] = icon.trigger.scp
     scp = icons[weightedchoice tbl]
-    unless scp.trigger.multiple
+    if scp.trigger.multiple
+      if data.scp_multiples[scp.id]
+        data.scp_multiples[scp.id] += 1
+      else
+        data.scp_multiples[scp.id] = 1
+    else
       scp.trigger.scp = nil
     unless data.cleared_scps[scp.id]
       data.scp_count += 1
@@ -145,7 +150,25 @@ icons = {
         data.research += element.data.research if element.data.research
         data.danger += element.data.danger if element.data.danger
       return true
-
+  multiple: (element, build_only) ->
+    count = 0
+    for child in *icons.icon_grid.child
+      if child.data.id == element.data.id
+        count += 1
+    if count > 1
+      return false
+    bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
+    fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
+    fg.update = =>
+      fg\setText data.scp_multiples[element.data.id]
+      bg\setSize fg\getSize!
+    unless build_only
+      data.cash_rate += element.data.cash_rate if element.data.cash_rate
+      data.research += element.data.research if element.data.research
+    element.clicked = (x, y, button) =>
+      if button == pop.constants.right_mouse
+        icons.scp_info element
+      return true
   toggleable: (element, data_key) ->
     bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
     fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
@@ -302,19 +325,11 @@ icons = {
   { -- 7 SCP the broken desert
     trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
     icon: "icons/cracked-glass.png"
-    tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost, ${research}\n(click to hide)"
+    tooltip: "SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost per instance, ${research} per instance"
     cash_rate: -0.2
     research: 4
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research += element.data.research
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 8 agent deaths
     trigger: {random: 0.6/60, multiple: true} -- 60% chance per minute
@@ -463,19 +478,11 @@ icons = {
   { -- 14 SCP MalO (never be alone)
     trigger: {scp: 0.001, multiple: true}
     icon: "icons/smartphone.png"
-    tooltip: "An instance of SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost, ${research}\n(click to hide)"
+    tooltip: "SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost per instance, ${research} per instance"
     cash_rate: -0.3
     research: 6
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research += element.data.research
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 15 automatic expeditions
     trigger: {all: {danger_decreasing: -3, scp_count: 3}}
@@ -619,17 +626,10 @@ icons = {
   { -- 21 SCP desert in a can
     trigger: {scp: 0.006, multiple: true}
     icon: "icons/spray.png"
-    tooltip: "An instance of SCP-622 \"Desert in a Can\"\n${cash_rate} containment cost\n(click to hide)"
+    tooltip: "SCP-622 \"Desert in a Can\"\n${cash_rate} containment cost per instance"
     cash_rate: -0.28
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 22 SCP book of endings
     trigger: {scp: 0.20}
@@ -643,17 +643,10 @@ icons = {
   { -- 23 SCP diet ghost
     trigger: {scp: 0.002, multiple: true}
     icon: "icons/soda-can.png"
-    tooltip: "An instance of SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost\n(click to hide)"
+    tooltip: "SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost per instance"
     cash_rate: -0.26
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 24 SCP book of dreams
     trigger: {scp: 0.30}
@@ -719,6 +712,7 @@ icons = {
     research: 10
     danger: 2.5
     apply: (element, build_only) ->
+      element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n#{data.scp092_researched_count}/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
       update_cash = ->
         icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.65 + 1.05 ^ (data.scp092_researched_count / 25) - 55)
       update_cash!
@@ -738,6 +732,36 @@ icons = {
           icons.scp_info element
         return true
   }
+  { -- 28 SCP deathly video tape
+    trigger: {scp: 0.4}
+    icon: "icons/audio-cassette.png"
+    tooltip: "SCP-583 \"Deathly Video Tape\"\n${cash_rate} containment cost, ${research}"
+    cash_rate: -0.15
+    research: 4
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research += element.data.research
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+  }
+  { -- 29 SCP many fingers, many toes
+    trigger: {}
+    --trigger: {scp: 0.38}
+    icon: "icons/fractal-hand.png"
+    tooltip: "SCP-584 \"Many Fingers, Many Toes\"\n${cash_rate} containment cost, ${research_rate} while contained"
+    cash_rate: -3.2
+    research_rate: 1.25
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research_rate += element.data.research_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+  }
+  --TODO make expeditions have a failure rate that increases as more SCPs are discovered
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
   --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
   --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)

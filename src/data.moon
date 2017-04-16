@@ -17,6 +17,7 @@ data = {
   -- cleared really just means "has triggered at least once before"
   cleared_scps: {}
   cleared_randoms: {}
+  scp_multiples: {}
 
   scp_count: 0
   savings_accounts: 0
@@ -32,7 +33,7 @@ data = {
   book_of_endings: false
   scp092_researched_count: 0
 
-  version: 3
+  version: 4
 }
 
 return data

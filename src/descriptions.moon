@@ -107,4 +107,22 @@ return {
     .
     The anomalous properties of each instance of SCP-092 are thematically and conceptually linked to the number 5, dimensions, and/or the members of The 5th Dimension.]]
   }
+  [28]: {
+    [[SCP-583 is a Sony Color Collection 60-90 min Mini DV video tape, its case composed primarily of transparent green plastic. Details of the contents of the tape itself, as described by test subjects:
+    .
+    * 0'00": Nothing on the tape for the first twelve seconds.
+    * 0'12": Playback of a recording of "Sesame Street Live" begins, although with no sound. A date stamp of [REDACTED] is visible.
+    * 2'58": █████ starts choking and tries to get out of his costume.
+    * 3'12": █████ dies from apparent asphyxiation. During the next nineteen seconds, three other characters ([REDACTED], [REDACTED], and [REDACTED]) start choking and die in the same way.
+    * 3'31": Recording stops. The rest of the tape is blank.
+    .
+    Subjects who watch SCP-583's recording suffer from a unique perception disorder: after seeing [REDACTED] die of asphyxiation, subjects witness the similar death of every character, fictional or not, that they see on TV or in a movie, hear on radio, or read about, whether printed or in electronic format. This condition appears to be permanent, ending only with the death of the subject.]]
+  }
+  [29]: {
+    [[SCP-584 is a highly infectious viral pathogen that, if left untreated, causes a disfiguring overgrowth of supernumerary limbs (see file photos). Structurally similar to the herpes simplex family of viruses, SCP-584 spreads via direct person-to-person contact and through contact with infected bodily fluids, and can also cross the placental barrier from an infected mother to her fetus, resulting in characteristic birth defects. SCP-584 typically lies dormant deep in the dermal tissue of those infected, largely suppressed by the immune system except for sporadic outbreaks. It is estimated that upwards of 80% of those exposed to the virus are asymptomatic carriers, making actual infection rates unknowable. (Current estimates place the highest rates of infection in Asia, particularly India and China, where the virus likely originated.) The virus appears limited to humans.
+    .
+    An outbreak of SCP-584 typically begins with the appearance of a small (> 2cm), painless lesion, most commonly on the extremities. Often these lesions appear similar to warts or skin tags. If not removed, the lesion will quickly grow to resemble a fully functional, though often undersized, appendage. Often the appendage will be "appropriate" to the limb on which the lesion appeared, i.e., extra toes on a foot, extra hands on an arm, etc, but severe outbreaks can trigger severely disfiguring, chaotic lesion formation elsewhere on the body, such as the head and torso. Lesions can appear singly or in groups.
+    .
+    Notably, SCP-584 has been shown to be able to regenerate missing limbs or digits in subjects who lost them due to accident or congenital (non-genetic) defects. These "replacement" appendages are full-sized and fully functional. It is believed that SCP-584 functions by activating regenerative biological processes that normally cease shortly after embryonic formation. However, SCP-584's effect seems restricted to external organs and appendages only.]]
+  }
 }

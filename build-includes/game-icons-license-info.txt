@@ -1,6 +1,6 @@
 Icons provided under the Creative Commons 3.0 BY or CC0 if mentioned below.
 
-Each sub-folders in this archive correspond to a different contributor :
+Contributors:
 
 - Lorc, http://lorcblog.blogspot.com
 - Delapouite, http://delapouite.com
@@ -26,9 +26,5 @@ Each sub-folders in this archive correspond to a different contributor :
 - Zeromancer - CC0
 - Rihlsul
 - Quoting
-
-Please, include a mention "Icons made by {author}" in your derivative work.
-
-If you use them in one of your project, don't hesitate to drop a message to delapouite@gmail.com or ping @GameIcons on twitter.
 
 More info and icons available at http://game-icons.net

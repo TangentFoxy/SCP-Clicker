@@ -156,6 +156,6 @@ if [ $latestBuilds = true ]; then
 	cp "$outputDir/$packageName-${version}_linux.zip" "$latestBuildsDir"
 fi
 
-echo "Builds complete. Unless there are errors above. Double check your files."
+echo "Builds complete."
 echo
 if which fortune > /dev/null 2>&1; then fortune; fi

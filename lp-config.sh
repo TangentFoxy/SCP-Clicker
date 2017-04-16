@@ -10,7 +10,7 @@ copyrightYear="2017"
 # (It should be fine to leave this as its default.)
 identifier="com.$author.$packageName"
 # Current version (of your program)
-version="0.9.0"
+source ./src/version.lua
 
 ###### Important! ONLY USE ABSOLUATE PATHS ######
 # Where to place the resulting executables.
@@ -50,7 +50,7 @@ allowOverwrite=false
 # Auto-number builds?
 # An "-buildN" will be added to the end of ZIP package names, with N being the Nth time this project was built.
 #  (To do this, a build.number file is stored in $outputDir, so watch out for that.)
-autoNumberBuilds=true
+autoNumberBuilds=false
 
 # Place latest builds in builds/latest?
 #  (This is a copy, not a move.)

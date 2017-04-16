@@ -1,8 +1,40 @@
 #!/bin/bash
 
+source ./version.sh
+source ./builds/build.number
+((build++))
+echo "version=\"$version+$build\"" > ./src/version.lua
+
+git submodule init
+git submodule update
+cd src/lib/pop
+git submodule init
+git submodule update
+cd ../../..
+moonc ./src
+mkdir -p ./tmp
+rm -rf ./tmp/src
+cp -r ./src ./tmp/src
+cp ./LICENSE.txt ./build-includes/
+rm ./tmp/src/*.moon
+rm ./tmp/src/gui/elements/*.moon
+rm -rf ./tmp/src/lib/pop/docs
+rm -rf ./tmp/src/lib/pop/screenshots
+rm -rf ./tmp/src/lib/pop/spec
+rm ./tmp/src/lib/pop/*.moon
+rm ./tmp/src/lib/pop/elements/*.moon
+rm -r ./tmp/src/lib/pop/.git*
+rm ./tmp/src/lib/pop/build.sh
+rm ./tmp/src/lib/pop/config.ld
+rm ./tmp/src/lib/pop/Element.luadoc
+rm ./tmp/src/lib/pop/LICENSE.txt
+rm ./tmp/src/lib/pop/README.md
+rm ./tmp/src/lib/pop/todo.txt
+rm -rf ./tmp/src/lib/pop/lib/inspect
+./lp-build.sh
+
 source ./lp-config.sh
-source "$outputDir/build.number"
-version=$version+$build
+echo "build=$build" > "$outputDir/build.number"
 
 butler status guard13007/scp-clicker
 
