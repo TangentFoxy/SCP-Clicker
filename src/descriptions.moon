@@ -102,4 +102,9 @@ return {
     .
     When an object is placed in the Intake Booth, a door slides shut, and a small bell sounds. If the knob is turned to any position and the key wound up, SCP-914 will “refine” the object in the booth. No energy is lost in the process, and the object appears to be in stasis until the Output Booth door is opened. Intense observation and testing have not shown how SCP-914 accomplishes this, and no test object has ever been observed inside SCP-914 during the “refining” process. The process takes between five and ten minutes, depending on the size of the object being refined.]]
   }
+  [27]: {
+    [[SCP-092 is a set of 3125 audio CDs, each labeled "The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!", and marked with the names of the 31 performers who have at various times been part of the American singing group "The 5th Dimension". Each instance of SCP-092, when played in a standard CD player, will produce a distinct anomalous effect upon all individuals within hearing range. The anomalous phenomenon will last 74 minutes (the duration of a standard audio CD), during which time listeners will be unable to leave hearing range, or to shut off the CD player or otherwise interrupt its function. As well, when the anomalous phenomenon finishes, all surviving listeners will engage in synchronized vocalization of the phrase "Wow, that was real cool"; synchronized vocalization has been observed in non-anglophones, pre-verbal infants, unconscious individuals, paralyzed individuals, and individuals physically incapable of speech due to laryngeal, lingual, and/or buccal damage.
+    .
+    The anomalous properties of each instance of SCP-092 are thematically and conceptually linked to the number 5, dimensions, and/or the members of The 5th Dimension.]]
+  }
 }
