@@ -1,5 +1,5 @@
 v = require "lib.semver"
-version = v "0.8.2-jam-final"
+version = v "0.8.3-jam-final"
 
 math.randomseed(os.time())
 
@@ -67,19 +67,10 @@ icons.add_icon = (icon, build_only) ->
 icons.fix_order = ->
   icon_grid\wheelmoved 0, 0
 
-  if false
-    x, y = margin, margin
-    data.icons = {}
-    for icon in *icon_grid.child
-      unless icon.data.id == 0 -- don't save UI elements
-        table.insert data.icons, icon.data.id
-      icon\setPosition x, y
-      x += margin + icon_size
-      if x > icon_grid.data.w - margin - icon_size
-        x = margin
-        y += margin + icon_size
-        if y > icon_grid.data.h - margin -- hide it, it doesn't fit!
-          y += 512
+  data.icons = {}
+  for icon in *icon_grid.child
+    unless icon.data.id == 0 -- don't save UI elements
+      table.insert data.icons, icon.data.id
 
 load = ->
   if loaded_text = love.filesystem.read "settings.txt"

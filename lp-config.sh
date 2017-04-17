@@ -10,7 +10,7 @@ copyrightYear="2017"
 # (It should be fine to leave this as its default.)
 identifier="com.$author.$packageName"
 # Current version (of your program)
-version="0.8.2-jam-final"
+version="0.8.3-jam-final"
 
 ###### Important! ONLY USE ABSOLUATE PATHS ######
 # Where to place the resulting executables.
