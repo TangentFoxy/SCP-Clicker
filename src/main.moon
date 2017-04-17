@@ -1,5 +1,6 @@
+require "version"
 v = require "lib.semver"
-version = v require "version"
+version = v version
 
 math.randomseed(os.time())
 
@@ -67,19 +68,10 @@ icons.add_icon = (icon, build_only) ->
 icons.fix_order = ->
   icon_grid\wheelmoved 0, 0
 
-  if false
-    x, y = margin, margin
-    data.icons = {}
-    for icon in *icon_grid.child
-      unless icon.data.id == 0 -- don't save UI elements
-        table.insert data.icons, icon.data.id
-      icon\setPosition x, y
-      x += margin + icon_size
-      if x > icon_grid.data.w - margin - icon_size
-        x = margin
-        y += margin + icon_size
-        if y > icon_grid.data.h - margin -- hide it, it doesn't fit!
-          y += 512
+  data.icons = {}
+  for icon in *icon_grid.child
+    unless icon.data.id == 0 -- don't save UI elements
+      table.insert data.icons, icon.data.id
 
 load = ->
   if loaded_text = love.filesystem.read "settings.txt"
@@ -398,7 +390,6 @@ love.update = (dt) ->
         local display_string
         if latest_version != "error"
           latest_version = v latest_version
-          latest_version.build = nil
           if version == latest_version
             display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
           elseif version > latest_version
@@ -411,7 +402,6 @@ love.update = (dt) ->
       else
         if latest_version != "error"
           latest_version = v latest_version
-          latest_version.build = nil
           if version < latest_version
             icons.add_icon({
               id: 0 -- any UI element is "ID" zero

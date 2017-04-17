@@ -9,6 +9,6 @@ cd ../../..
 
 moonc ./src
 source version.sh
-echo "return \"$version-dev\"" > ./src/version.lua
+echo "version=\"$version-dev\"" > ./src/version.lua
 
 love src
