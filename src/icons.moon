@@ -736,6 +736,21 @@ icons = {
           icons.scp_info element
         return true
   }
+  { -- 28 SCP deathly video tape
+    trigger: {scp: 0.4}
+    icon: "icons/audio-cassette.png"
+    tooltip: "SCP-583 \"Deathly Video Tape\"\n${cash_rate} containment cost, ${research}"
+    cash: -0.15
+    research: 4
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research += element.data.research
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+  }
+  --TODO make expeditions have a failure rate that increases as more SCPs are discovered
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
   --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
   --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)
