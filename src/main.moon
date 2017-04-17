@@ -104,8 +104,14 @@ load = ->
       loaded_data.version = 2
     if loaded_data.version == 2
       settings.check_for_updates = loaded_data.check_for_updates
+      loaded_data.check_for_updates = nil   -- error, fixed in below version
       loaded_data.version = 3
-      loaded_data.check_for_updates = nil
+    if loaded_data.version == 3
+      for id in pairs data.cleared_scps
+        if icons[id].trigger.multiple
+          data.scp_multiples[id] = 2   -- just assume we have two instances
+      data.check_for_updates = nil
+      loaded_data.version = 4
 
     -- apply loaded data
     for id in pairs data.cleared_scps

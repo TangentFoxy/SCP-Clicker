@@ -131,7 +131,12 @@ icons = {
       if icon.trigger.scp
         tbl[key] = icon.trigger.scp
     scp = icons[weightedchoice tbl]
-    unless scp.trigger.multiple
+    if scp.trigger.multiple
+      if data.scp_multiples[scp.id]
+        data.scp_multiples[scp.id] += 1
+      else
+        data.scp_multiples[scp.id] = 1
+    else
       scp.trigger.scp = nil
     unless data.cleared_scps[scp.id]
       data.scp_count += 1

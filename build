@@ -1,7 +1,9 @@
 #!/bin/bash
 
 source ./version.sh
-echo "version=\"$version-experimental\"" > ./src/version.lua
+source ./builds/build.number
+((build++))
+echo "version=\"$version-experimental+$build\"" > ./src/version.lua
 
 git submodule init
 git submodule update
