@@ -740,7 +740,7 @@ icons = {
     trigger: {scp: 0.4}
     icon: "icons/audio-cassette.png"
     tooltip: "SCP-583 \"Deathly Video Tape\"\n${cash_rate} containment cost, ${research}"
-    cash: -0.15
+    cash_rate: -0.15
     research: 4
     apply: (element, build_only) ->
       unless build_only
