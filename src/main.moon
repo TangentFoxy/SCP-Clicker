@@ -1,5 +1,5 @@
 v = require "lib.semver"
-version = v "0.8.1-jam-final"
+version = v "0.8.2-jam-final"
 
 math.randomseed(os.time())
 
@@ -411,7 +411,6 @@ love.update = (dt) ->
       else
         if latest_version != "error"
           latest_version = v latest_version
-          latest_version.build = nil
           if version < latest_version
             icons.add_icon({
               id: 0 -- any UI element is "ID" zero

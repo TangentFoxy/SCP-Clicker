@@ -6,9 +6,9 @@ version=$version+$build
 
 butler status guard13007/scp-clicker
 
-butler push "$outputDir/$packageName-${version}_win32.zip" guard13007/scp-clicker:win32 --userversion ${version}
-butler push "$outputDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:osx --userversion ${version}
-butler push "$outputDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:linux --userversion ${version}
+butler push "$outputDir/$packageName-${version}_win32.zip" guard13007/scp-clicker:jam-win32 --userversion ${version}
+butler push "$outputDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:jam-osx --userversion ${version}
+butler push "$outputDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:jam-linux --userversion ${version}
 
 echo "Waiting for 30 seconds and then checking status."
 

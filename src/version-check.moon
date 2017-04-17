@@ -9,7 +9,7 @@ current_version = receive\demand!
 complete = false
 
 while not complete
-  body, status = http.request "http://104.236.139.220:16343/get/https://itch.io/api/1/x/wharf/latest?target=guard13007/scp-clicker&channel_name=win32"
+  body, status = http.request "http://104.236.139.220:16343/get/https://itch.io/api/1/x/wharf/latest?target=guard13007/scp-clicker&channel_name=jam-win32"
 
   if status == 200
     latest_version = (json.decode body).latest
@@ -27,7 +27,7 @@ while true
   else
     love.timer.sleep 60*30
 
-  body, status = http.request "http://104.236.139.220:16343/get/https://itch.io/api/1/x/wharf/latest?target=guard13007/scp-clicker&channel_name=win32"
+  body, status = http.request "http://104.236.139.220:16343/get/https://itch.io/api/1/x/wharf/latest?target=guard13007/scp-clicker&channel_name=jam-win32"
 
   if status == 200
     latest_version = (json.decode body).latest
