@@ -1,8 +1,0 @@
-Using icons from game-icons.net, see game-icons-license-info.txt
-
-- Also using the Lume library: https://github.com/rxi/lume
-- And Kikito's cron.lua: https://github.com/kikito/cron.lua
-
-Additionally using my own LovePackaging build system (which is kinda crappy, but
-works) and Pop.Box GUI library (which is heavily alpha, but better now that I'm
-using it).

@@ -1,5 +1,6 @@
 *.lua
 !src/lib/*
+build-includes/LICENSE.txt
 !builds/
 builds/*
 !builds/build.number

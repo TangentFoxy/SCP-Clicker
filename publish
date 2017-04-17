@@ -15,6 +15,7 @@ moonc ./src
 mkdir -p ./tmp
 rm -rf ./tmp/src
 cp -r ./src ./tmp/src
+cp ./LICENSE.txt ./build-includes/
 rm ./tmp/src/*.moon
 rm ./tmp/src/gui/elements/*.moon
 rm -rf ./tmp/src/lib/pop/docs

@@ -1,0 +1,17 @@
+This game is based on the SCP Foundation from http://scp-wiki.net/ and is
+released under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
+
+Icons are from game-icons.net or were created by me and submitted to
+game-icons.net, see game-icons-license-info.txt for contributors.
+
+Libraries:
+
+All are available under the terms of the MIT license:
+
+- Pop.Box: https://github.com/Guard13007/Pop.Box
+- cron.lua: https://github.com/kikito/cron.lua
+- json.lua: https://github.com/rxi/json.lua
+- Lume: https://github.com/rxi/lume
+- semver.lua: https://github.com/kikito/semver.lua
+
+Additionally using my own LovePackaging build system, modified for this project.
