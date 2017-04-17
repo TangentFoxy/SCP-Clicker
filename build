@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source ./version.sh
+echo "return \"$version-experimental\"" > ./src/version.lua
+
 git submodule init
 git submodule update
 cd src/lib/pop
@@ -26,3 +29,13 @@ rm ./tmp/src/lib/pop/README.md
 rm ./tmp/src/lib/pop/todo.txt
 rm -rf ./tmp/src/lib/pop/lib/inspect
 ./lp-build.sh
+
+source ./lp-config.sh
+source "$outputDir/build.number"
+version=$version+$build
+
+butler push "$outputDir/$packageName-${version}_win32.zip" guard13007/scp-clicker:experimental-win32 --userversion ${version}
+butler push "$outputDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:experimental-osx --userversion ${version}
+butler push "$outputDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:experimental-linux --userversion ${version}
+
+butler status guard13007/scp-clicker

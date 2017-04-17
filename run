@@ -1,0 +1,14 @@
+#!/bin/bash
+
+git submodule init
+git submodule update
+cd src/lib/pop
+git submodule init
+git submodule update
+cd ../../..
+
+moonc ./src
+source version.sh
+echo "return \"$version-dev\"" > ./src/version.lua
+
+love src

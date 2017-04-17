@@ -1,5 +1,5 @@
 v = require "lib.semver"
-version = v "0.9.0"
+version = v require "version"
 
 math.randomseed(os.time())
 
