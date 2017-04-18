@@ -32,6 +32,7 @@ deepcopy = (orig) ->
   return copy
 
 icons.add_icon = (icon, build_only) ->
+  unless icon return false -- now possible to call it with nothing, choose_scp can return nothing sometimes
   x = #icons.icon_grid.data.child % icons.icon_grid.data.grid_width
   y = math.floor #icons.icon_grid.data.child / icons.icon_grid.data.grid_width
   if icon.trigger.multiple
@@ -73,6 +74,9 @@ icons.fix_order = ->
   for icon in *icons.icon_grid.child
     unless icon.data.id == 0 -- don't save UI elements
       table.insert data.icons, icon.data.id
+
+save = ->
+  love.filesystem.write "save.txt", serialize data
 
 load = ->
   if loaded_text = love.filesystem.read "settings.txt"
@@ -261,6 +265,9 @@ love.load = ->
               icon.trigger.random = nil
             data.cleared_randoms[icon.id] = true
           break
+
+  timers.every 60, ->
+    save!
 
   tooltip_box = pop.box()
   tooltip_text = pop.text(tooltip_box, 20)
@@ -535,10 +542,7 @@ love.quit = ->
   if exit_action == "reset_data"
     love.filesystem.remove "save.txt"
   elseif exit_action == "save_data"
-    --data.icons = {}
-    --for icon in *icons.icon_grid.child
-    --  table.insert data.icons, icon.id
-    love.filesystem.write "save.txt", serialize data
+    save!
 
   love.filesystem.write "settings.txt", serialize settings
 
