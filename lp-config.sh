@@ -50,7 +50,7 @@ allowOverwrite=false
 # Auto-number builds?
 # An "-buildN" will be added to the end of ZIP package names, with N being the Nth time this project was built.
 #  (To do this, a build.number file is stored in $outputDir, so watch out for that.)
-autoNumberBuilds=true
+autoNumberBuilds=false
 
 # Place latest builds in builds/latest?
 #  (This is a copy, not a move.)

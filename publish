@@ -34,8 +34,7 @@ rm -rf ./tmp/src/lib/pop/lib/inspect
 ./lp-build.sh
 
 source ./lp-config.sh
-source "$outputDir/build.number"
-version=$version+$build
+echo "build=$build" > "$outputDir/build.number"
 
 butler status guard13007/scp-clicker
 

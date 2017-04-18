@@ -19,7 +19,7 @@ margin = 8
 
 debug = false
 
-local tooltip_box, tooltip_text, icon_grid, tip, paused_overlay, exit_action, version_display
+local tooltip_box, tooltip_text, tip, paused_overlay, exit_action, version_display
 
 deepcopy = (orig) ->
   orig_type = type(orig)
@@ -34,23 +34,25 @@ deepcopy = (orig) ->
   return copy
 
 icons.add_icon = (icon, build_only) ->
-  x = #icon_grid.data.child % icon_grid.data.grid_width
-  y = math.floor #icon_grid.data.child / icon_grid.data.grid_width
+  x = #icons.icon_grid.data.child % icons.icon_grid.data.grid_width
+  y = math.floor #icons.icon_grid.data.child / icons.icon_grid.data.grid_width
   if icon.trigger.multiple
     icon = deepcopy icon
   icon.w = icon_size
   icon.h = icon_size
-  element = pop.icon(icon_grid, icon)\move(x * (icon_size + margin) + margin, y * (icon_size + margin) + margin)
+  element = pop.icon(icons.icon_grid, icon)\move(x * (icon_size + margin) + margin, y * (icon_size + margin) + margin)
   if false != icon.apply(element, build_only)
+    --if element
+    --  element\delete!
     icon.activated = true -- make sure icons are only added once when triggered
     element.wheelmoved = (x, y) =>
-      icon_grid\wheelmoved x, y
+      icons.icon_grid\wheelmoved x, y
     for child in *element.child
       child.data.hoverable = false
     --_, y = element\getPosition!
-    --if y > icon_grid.data.h - margin*2
+    --if y > icons.icon_grid.data.h - margin*2
     --  element\setPosition -512, -512 -- hide it, it doesn't fit!
-    icon_grid\wheelmoved 0, 0
+    icons.icon_grid\wheelmoved 0, 0
     unless build_only
       if icon.id != 0 -- don't save the pause button!
         table.insert data.icons, icon.id
@@ -66,10 +68,10 @@ icons.add_icon = (icon, build_only) ->
   return false -- an icon was not set
 
 icons.fix_order = ->
-  icon_grid\wheelmoved 0, 0
+  icons.icon_grid\wheelmoved 0, 0
 
   data.icons = {}
-  for icon in *icon_grid.child
+  for icon in *icons.icon_grid.child
     unless icon.data.id == 0 -- don't save UI elements
       table.insert data.icons, icon.data.id
 
@@ -144,15 +146,15 @@ love.load = ->
   if graphics.getHeight! % (icon_size + margin) < 8
     grid_height -= 1
 
-  icon_grid = pop.box({
+  icons.icon_grid = pop.box({
     w: grid_width * (icon_size + margin) + margin
     h: grid_height * (icon_size + margin) + margin
     :grid_width, :grid_height
   })\setColor(255, 255, 255, 255)\align "center"
-  icon_grid.data.currentLine = 0
-  icon_grid.wheelmoved = (x, y) =>
-    lineWidth = math.floor icon_grid.data.w / (icon_size + margin)
-    lines = 1 + math.floor #icon_grid.child / ( lineWidth )
+  icons.icon_grid.data.currentLine = 0
+  icons.icon_grid.wheelmoved = (x, y) =>
+    lineWidth = math.floor icons.icon_grid.data.w / (icon_size + margin)
+    lines = 1 + math.floor #icons.icon_grid.child / ( lineWidth )
     @data.currentLine -= math.floor y
     if @data.currentLine < 0 or lines < 4
       @data.currentLine = 0
@@ -163,12 +165,12 @@ love.load = ->
       icon\setPosition -512, -512 -- safely off-screen
     for i = 1 + @data.currentLine * lineWidth, (@data.currentLine + 3) * lineWidth
       if icon = @child[i]
-        if y > icon_grid.data.h - margin
+        if y > icons.icon_grid.data.h - margin
           icon\setPosition -512, -512 -- safely off-screen
         else
           icon\setPosition x, y
         x += margin + icon_size
-        if x > icon_grid.data.w - margin - icon_size
+        if x > icons.icon_grid.data.w - margin - icon_size
           x = margin
           y += margin + icon_size
 
@@ -396,9 +398,9 @@ love.update = (dt) ->
         local display_string
         if latest_version != "error"
           latest_version = v latest_version
-          if version == latest_version
+          if version == latest_version and version.build == latest_version.build
             display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
-          elseif version > latest_version
+          elseif version > latest_version or version.build > latest_version.build
             display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
           else
             display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
@@ -535,7 +537,7 @@ love.quit = ->
     love.filesystem.remove "save.txt"
   elseif exit_action == "save_data"
     --data.icons = {}
-    --for icon in *icon_grid.child
+    --for icon in *icons.icon_grid.child
     --  table.insert data.icons, icon.id
     love.filesystem.write "save.txt", serialize data
 
