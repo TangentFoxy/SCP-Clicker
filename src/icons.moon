@@ -150,7 +150,25 @@ icons = {
         data.research += element.data.research if element.data.research
         data.danger += element.data.danger if element.data.danger
       return true
-
+  multiple: (element, build_only) ->
+    count = 0
+    for child in *icons.icon_grid.child
+      if child.data.id == element.data.id
+        count += 1
+    if count > 1
+      return false
+    bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
+    fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
+    fg.update = =>
+      fg\setText data.scp_multiples[element.data.id]
+      bg\setSize fg\getSize!
+    unless build_only
+      data.cash_rate += element.data.cash_rate if element.data.cash_rate
+      data.research += element.data.research if element.data.research
+    element.clicked = (x, y, button) =>
+      if button == pop.constants.right_mouse
+        icons.scp_info element
+      return true
   toggleable: (element, data_key) ->
     bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
     fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
@@ -307,19 +325,11 @@ icons = {
   { -- 7 SCP the broken desert
     trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
     icon: "icons/cracked-glass.png"
-    tooltip: "An instance of SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost, ${research}\n(click to hide)"
+    tooltip: "SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost per instance, ${research} per instance"
     cash_rate: -0.2
     research: 4
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research += element.data.research
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 8 agent deaths
     trigger: {random: 0.6/60, multiple: true} -- 60% chance per minute
@@ -468,19 +478,11 @@ icons = {
   { -- 14 SCP MalO (never be alone)
     trigger: {scp: 0.001, multiple: true}
     icon: "icons/smartphone.png"
-    tooltip: "An instance of SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost, ${research}\n(click to hide)"
+    tooltip: "SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost per instance, ${research} per instance"
     cash_rate: -0.3
     research: 6
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research += element.data.research
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 15 automatic expeditions
     trigger: {all: {danger_decreasing: -3, scp_count: 3}}
@@ -624,17 +626,10 @@ icons = {
   { -- 21 SCP desert in a can
     trigger: {scp: 0.006, multiple: true}
     icon: "icons/spray.png"
-    tooltip: "An instance of SCP-622 \"Desert in a Can\"\n${cash_rate} containment cost\n(click to hide)"
+    tooltip: "SCP-622 \"Desert in a Can\"\n${cash_rate} containment cost per instance"
     cash_rate: -0.28
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 22 SCP book of endings
     trigger: {scp: 0.20}
@@ -648,17 +643,10 @@ icons = {
   { -- 23 SCP diet ghost
     trigger: {scp: 0.002, multiple: true}
     icon: "icons/soda-can.png"
-    tooltip: "An instance of SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost\n(click to hide)"
+    tooltip: "SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost per instance"
     cash_rate: -0.26
     apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-        return true
+      icons.multiple element, build_only
   }
   { -- 24 SCP book of dreams
     trigger: {scp: 0.30}

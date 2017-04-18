@@ -17,8 +17,6 @@ state = require "state"
 icon_size = 128
 margin = 8
 
-debug = false
-
 local tooltip_box, tooltip_text, tip, paused_overlay, exit_action, version_display
 
 deepcopy = (orig) ->
@@ -42,8 +40,6 @@ icons.add_icon = (icon, build_only) ->
   icon.h = icon_size
   element = pop.icon(icons.icon_grid, icon)\move(x * (icon_size + margin) + margin, y * (icon_size + margin) + margin)
   if false != icon.apply(element, build_only)
-    --if element
-    --  element\delete!
     icon.activated = true -- make sure icons are only added once when triggered
     element.wheelmoved = (x, y) =>
       icons.icon_grid\wheelmoved x, y
@@ -65,7 +61,10 @@ icons.add_icon = (icon, build_only) ->
         tip\setText icon.tip
         tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
     return true -- an icon was set
-  return false -- an icon was not set
+  else
+    if element
+      element\delete!
+    return false -- an icon was not set
 
 icons.fix_order = ->
   icons.icon_grid\wheelmoved 0, 0
@@ -508,7 +507,7 @@ love.update = (dt) ->
 
 love.draw = ->
   pop.draw!
-  pop.debugDraw! if debug
+  pop.debugDraw! if settings.debug
 
 love.mousemoved = (x, y, dx, dy) ->
   pop.mousemoved x, y, dx, dy
@@ -528,9 +527,9 @@ love.keypressed = (key) ->
     exit_action = "save_data"
     love.event.quit!
   elseif key == "d"
-    debug = not debug
-  elseif key == "a" and debug
-    icons.add_icon icons[8]
+    settings.debug = not settings.debug
+  elseif key == "f" and settings.debug
+    icons.add_icon icons.choose_scp!
 
 love.quit = ->
   if exit_action == "reset_data"
