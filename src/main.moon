@@ -129,6 +129,7 @@ load = ->
       icons.add_icon(icons[id], true)
 
 game_over = (reason) ->
+  state.paused = true
   overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
   pop.text(overlay, "Game Over", 60)\align("center", "top")\move nil, 20
   pop.text(overlay, reason, 24)\align "center", "center"
