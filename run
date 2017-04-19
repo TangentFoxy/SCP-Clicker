@@ -1,11 +1,13 @@
 #!/bin/bash
 
-git submodule init
-git submodule update
-cd src/lib/pop
-git submodule init
-git submodule update
-cd ../../..
+if [ ! -e ./src/version.lua ]; then
+  git submodule init
+  git submodule update
+  cd src/lib/pop
+  git submodule init
+  git submodule update
+  cd ../../..
+fi
 
 moonc ./src
 source version.sh
