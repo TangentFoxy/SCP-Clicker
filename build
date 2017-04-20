@@ -40,4 +40,4 @@ butler push "$outputDir/$packageName-${version}_win32.zip" guard13007/scp-clicke
 butler push "$outputDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:experimental-osx --userversion ${version}
 butler push "$outputDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:experimental-linux --userversion ${version}
 
-butler status guard13007/scp-clicker
+#butler status guard13007/scp-clicker

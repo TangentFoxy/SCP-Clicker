@@ -747,8 +747,7 @@ icons = {
           icons.scp_info element
   }
   { -- 29 SCP many fingers, many toes
-    trigger: {}
-    --trigger: {scp: 0.38}
+    trigger: {scp: 0.38}
     icon: "icons/fractal-hand.png"
     tooltip: "SCP-584 \"Many Fingers, Many Toes\"\n${cash_rate} containment cost, ${research_rate} while contained"
     cash_rate: -3.2
@@ -757,6 +756,20 @@ icons = {
       unless build_only
         data.cash_rate += element.data.cash_rate
         data.research_rate += element.data.research_rate
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+  }
+  { -- 30 SCP pink flamingos
+    trigger: {scp: 0.4}
+    icon: "icons/flamingo.png"
+    tooltip: "SCP-1507 \"Pink Flamingos\"\n${cash_rate} containment cost, ${research}"
+    cash_rate: -2.5
+    research: 4.2
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.research += element.data.research
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
