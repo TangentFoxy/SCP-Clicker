@@ -335,9 +335,12 @@ love.load = ->
       version_check_text = pop.text(toggle_version_check, "Enable version checking.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
     toggle_version_check.clicked = (x, y, button) =>
       settings.check_for_updates = not settings.check_for_updates
+      send = love.thread.getChannel "send"
       if settings.check_for_updates
+        send\push "start"
         version_check_text\setText("Disable version checking.")\move icon_size + margin
       else
+        send\push "stop"
         version_check_text\setText("Enable version checking.")\move icon_size + margin
       return true
 
@@ -405,9 +408,9 @@ love.update = (dt) ->
         local display_string
         if latest_version != "error"
           latest_version = v latest_version
-          if version == latest_version and version.build == latest_version.build
+          if version == latest_version and version.build and latest_version.build and version.build == latest_version.build
             display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
-          elseif version > latest_version or version.build > latest_version.build
+          elseif version > latest_version or version.build and latest_version.build and version.build > latest_version.build
             display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
           else
             display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
