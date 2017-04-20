@@ -1,8 +1,8 @@
 local data
 
 data = {
-  cash: 0
-  cash_rate: 0
+  cash: 200
+  cash_rate: 2.5
   cash_multiplier: 0
 
   research: 0
