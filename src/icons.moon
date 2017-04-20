@@ -750,7 +750,7 @@ icons = {
     trigger: {scp: 0.38}
     icon: "icons/fractal-hand.png"
     tooltip: "SCP-584 \"Many Fingers, Many Toes\"\n${cash_rate} containment cost, ${research_rate} while contained"
-    cash_rate: -3.2
+    cash_rate: -4.5
     research_rate: 1.25
     apply: (element, build_only) ->
       unless build_only
@@ -764,7 +764,7 @@ icons = {
     trigger: {scp: 0.4}
     icon: "icons/flamingo.png"
     tooltip: "SCP-1507 \"Pink Flamingos\"\n${cash_rate} containment cost, ${research}"
-    cash_rate: -2.5
+    cash_rate: -3.2
     research: 4.2
     apply: (element, build_only) ->
       unless build_only
