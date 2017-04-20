@@ -196,7 +196,7 @@ icons = {
     bg\setSize fg\getSize!
     fg\align!
 
-  { -- 1 get cash
+  { -- 1 ACTION get cash
     trigger: {danger: 0.0215}
     icon: "icons/banknote.png"
     tooltip: "Get funds.\n${cash}, ${danger}"
@@ -206,7 +206,7 @@ icons = {
     apply: (element) ->
       icons.basic element
   }
-  { -- 2 research SCPs
+  { -- 2 ACTION research SCPs
     trigger: {scp_count: 2}
     icon: "icons/soap-experiment.png"
     tooltip: "Research contained SCPs.\n${research} per SCP, ${danger} per SCP (maximum +99% danger)"
@@ -219,7 +219,7 @@ icons = {
           data.danger += math.min element.data.danger * data.scp_count, 99
         return true
   }
-  { -- 3 savings accounts
+  { -- 3 RESOURCE savings accounts
     trigger: {cash: 800}
     icon: "icons/piggy-bank.png"
     tooltip: "Open a savings account.\n${cash}, ${cash_rate}"
@@ -237,13 +237,13 @@ icons = {
             data.cash += element.data.cash
             data.cash_rate += element.data.cash_rate
             data.savings_accounts += 1
-        elseif button == pop.constants.right_mouse
+        elseif button == pop.constants.right_mouse and data.savings_accounts > 0
           data.cash -= element.data.cash * 0.9
           data.cash_rate -= element.data.cash_rate
           data.savings_accounts -= 1
         return true
   }
-  { -- 4 expending class-d to enact emergency ritual with no other consequence
+  { -- 4 ACTION expending class-d to enact emergency ritual with no other consequence
     trigger: {all: {danger: 10, class_d_count: 10}}
     icon: "icons/moebius-star.png"
     tooltip: "Use Class D personnel to complete emergency containment rituals.\n${cash}, ${danger}, ${class_d_count}"
@@ -261,7 +261,7 @@ icons = {
             data.class_d_count += element.data.class_d_count -- adding negative to remove it
         return true
   }
-  { -- 5 hire agent
+  { -- 5 RESOURCE hire agent
     trigger: {danger: 0.1}
     icon: "icons/person.png"
     tooltip: "Hire an agent.\n${cash_rate}, ${danger_rate}"
@@ -280,14 +280,14 @@ icons = {
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.agent_count += 1
-        elseif button == pop.constants.right_mouse
+        elseif button == pop.constants.right_mouse and data.agent_count > 0
           data.cash_rate -= element.data.cash_rate
           data.danger_rate -= element.data.danger_rate
           data.agent_count -= 1
           icons[9].agent_count = data.agent_count
         return true
   }
-  { -- 6 go on expedition
+  { -- 6 ACTION go on expedition
     trigger: {cash: 6000}
     icon: "icons/treasure-map.png"
     tooltip: "Send an expedition to find SCPs.\n${cash}, ${danger}, ${time}"
@@ -331,7 +331,7 @@ icons = {
     apply: (element, build_only) ->
       icons.multiple element, build_only
   }
-  { -- 8 agent deaths
+  { -- 8 EVENT agent deaths
     trigger: {random: 0.6/60, multiple: true} -- 60% chance per minute
     icon: "icons/morgue-feet.png"
     tooltip: "An agent has died.\n(click to dismiss)"
@@ -350,7 +350,7 @@ icons = {
         element\delete!
         return true
   }
-  { -- 9 automatic agent re-hire
+  { -- 9 TOGGLE automatic agent re-hire
     trigger: {agent_count: 30}
     icon: "icons/hammer-sickle.png"
     tooltip: "Hire replacement agents automatically.\n${cash_rate}"
@@ -392,7 +392,7 @@ icons = {
       bg\setSize fg\getSize!
       fg\align!
   }
-  { -- 10 open banks
+  { -- 10 RESOURCE open banks
     trigger: {savings_accounts: 20}
     icon: "icons/bank.png"
     tooltip: "Open a bank.\n${cash}, ${cash_multiplier} (maximum +$500/s cash)"
@@ -411,13 +411,13 @@ icons = {
             data.cash += element.data.cash
             data.cash_multiplier += element.data.cash_multiplier
             data.bank_count += 1
-        elseif button == pop.constants.right_mouse
+        elseif button == pop.constants.right_mouse and data.bank_count > 0
           data.cash -= element.data.cash * 0.4
           data.cash_multiplier -= element.data.cash_multiplier
           data.bank_count -= 1
         return true
   }
-  { -- 11 emergency ritual
+  { -- 11 ACTION emergency ritual
     trigger: {danger_increasing: 2.25}
     icon: "icons/pentagram-rose.png"
     tooltip: "Complete a ritual to reduce danger.\n${cash}, ${danger}, ${danger_rate}"
@@ -433,7 +433,7 @@ icons = {
             data.danger_rate += element.data.danger_rate
         return true
   }
-  { -- 12 class-d personnel
+  { -- 12 RESOURCE class-d personnel
     trigger: {agent_count: 40}
     icon: "icons/convict.png"
     tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate} (${cash} to terminate)"
@@ -452,7 +452,7 @@ icons = {
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.class_d_count += 1
-        elseif button == pop.constants.right_mouse
+        elseif button == pop.constants.right_mouse and data.class_d_count > 0
           if data.cash >= math.abs element.data.cash
             data.cash += element.data.cash
             data.cash_rate -= element.data.cash_rate
@@ -484,7 +484,7 @@ icons = {
     apply: (element, build_only) ->
       icons.multiple element, build_only
   }
-  { -- 15 automatic expeditions
+  { -- 15 TOGGLE automatic expeditions
     trigger: {all: {danger_decreasing: -3, scp_count: 3}}
     icon: "icons/helicopter.png"
     tooltip: "Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
@@ -661,7 +661,7 @@ icons = {
           icons.scp_info element
         return true
   }
-  { -- 25 the clockworks
+  { -- 25 SCP the clockworks
     trigger: {scp: 0.15}
     icon: "icons/gear-hammer.png"
     tooltip: "SCP-914 \"The Clockworks\"\n${cash_rate} containment cost, ${research_rate} while contained, ${danger_rate}"
@@ -678,7 +678,7 @@ icons = {
           icons.scp_info element
         return true
   }
-  { -- 26 clockwork-caused breach
+  { -- 26 EVENT clockwork-caused breach
     trigger: {random: 0.001/60, multiple: true} -- no idea what rate this is
     icon: "icons/clockwork.png"
     tooltip: "Containment breach caused by SCP-914!\n${cash_rate} until contained, ${danger_rate} until contained\n${cash} to attempt containment"
