@@ -17,7 +17,7 @@ state = require "state"
 icon_size = 128
 margin = 8
 
-local tooltip_box, tooltip_text, tip, paused_overlay, exit_action, version_display
+local tooltip_box, tooltip_text, tip, paused_overlay, exit_action, version_display, autosave_timer
 
 deepcopy = (orig) ->
   orig_type = type(orig)
@@ -267,8 +267,9 @@ love.load = ->
             data.cleared_randoms[icon.id] = true
           break
 
-  timers.every 60, ->
-    save!
+  if settings.autosave
+    autosave_timer = timers.every 60, ->
+      save!
 
   tooltip_box = pop.box()
   tooltip_text = pop.text(tooltip_box, 20)
@@ -342,7 +343,26 @@ love.load = ->
       else
         send\push "stop"
         version_check_text\setText("Enable version checking.")\move icon_size + margin
-      return true
+
+    toggle_autosave = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/aerial-signal.png", tooltip: ""})\align "center", "center"
+    toggle_autosave\move icon_size / 2, icon_size + margin
+    local autosave_text
+    if settings.autosave
+      autosave_text = pop.text(toggle_autosave, "Disable autosave.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    else
+      autosave_text = pop.text(toggle_autosave, "Enable autosave.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    toggle_autosave.clicked = (x, y, button) =>
+      settings.autosave = not settings.autosave
+      send = love.thread.getChannel "send"
+      if settings.autosave
+        autosave_timer = timers.every 60, ->
+          save!
+        autosave_text\setText("Disable autosave.")\move icon_size + margin
+      else
+        if autosave_timer
+          timers.remove autosave_timer
+          autosave_timer = nil
+        autosave_text\setText("Enable autosave.")\move icon_size + margin
 
   exit = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/power-button.png", tooltip: ""})\align nil, "center"
   exit\move margin--, icon_size + margin
