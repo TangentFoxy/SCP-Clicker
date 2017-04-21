@@ -107,7 +107,6 @@ icons = {
     overlay.clicked = (x, y, button) =>
       state.paused = false
       overlay\delete!
-      return true
     overlay.wheelmoved = (x, y) =>
       currentLine -= math.floor y -- just in case it is possible to get a non-integer value
       if currentLine < 0 or #fullDescription < 20
@@ -149,7 +148,7 @@ icons = {
         data.cash += element.data.cash if element.data.cash
         data.research += element.data.research if element.data.research
         data.danger += element.data.danger if element.data.danger
-      return true
+
   multiple: (element, build_only) ->
     count = 0
     for child in *icons.icon_grid.child
@@ -168,7 +167,7 @@ icons = {
     element.clicked = (x, y, button) =>
       if button == pop.constants.right_mouse
         icons.scp_info element
-      return true
+
   toggleable: (element, data_key) ->
     bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
     fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
@@ -191,7 +190,6 @@ icons = {
           bg\setSize fg\getSize!
       elseif button == pop.constants.right_mouse
         icons.scp_info element
-      return true
     -- dunno why these are needed...
     bg\setSize fg\getSize!
     fg\align!
@@ -217,7 +215,6 @@ icons = {
         if button == pop.constants.left_mouse
           data.research += element.data.research * data.scp_count
           data.danger += math.min element.data.danger * data.scp_count, 99
-        return true
   }
   { -- 3 RESOURCE savings accounts
     trigger: {cash: 800}
@@ -241,7 +238,6 @@ icons = {
           data.cash -= element.data.cash * 0.9
           data.cash_rate -= element.data.cash_rate
           data.savings_accounts -= 1
-        return true
   }
   { -- 4 ACTION expending class-d to enact emergency ritual with no other consequence
     trigger: {all: {danger: 10, class_d_count: 10}}
@@ -259,7 +255,6 @@ icons = {
             data.danger += element.data.danger
             data.danger_rate += icons[12].danger_rate * element.data.class_d_count
             data.class_d_count += element.data.class_d_count -- adding negative to remove it
-        return true
   }
   { -- 5 RESOURCE hire agent
     trigger: {danger: 0.1}
@@ -285,7 +280,6 @@ icons = {
           data.danger_rate -= element.data.danger_rate
           data.agent_count -= 1
           icons[9].agent_count = data.agent_count
-        return true
   }
   { -- 6 ACTION go on expedition
     trigger: {cash: 6000}
@@ -320,7 +314,6 @@ icons = {
           data.cash += element.data.cash
           data.danger += element.data.danger
           fn!
-        return true
   }
   { -- 7 SCP the broken desert
     trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
@@ -332,7 +325,7 @@ icons = {
       icons.multiple element, build_only
   }
   { -- 8 EVENT agent deaths
-    trigger: {random: 0.6/60, multiple: true} -- 60% chance per minute
+    trigger: {random: 0.45/60, multiple: true} -- 45% chance per minute
     icon: "icons/morgue-feet.png"
     tooltip: "An agent has died.\n(click to dismiss)"
     tip: "When agents die, things get dangerous..."
@@ -348,7 +341,6 @@ icons = {
           return false -- cancel the action!
       element.clicked = (x, y, button) =>
         element\delete!
-        return true
   }
   { -- 9 TOGGLE automatic agent re-hire
     trigger: {agent_count: 30}
@@ -387,7 +379,6 @@ icons = {
               data.agent_rehire_enabled = false
               fg\setText "INACTIVE"
             bg\setSize fg\getSize!
-        return true
       -- dunno why these are needed...
       bg\setSize fg\getSize!
       fg\align!
@@ -415,7 +406,6 @@ icons = {
           data.cash -= element.data.cash * 0.4
           data.cash_multiplier -= element.data.cash_multiplier
           data.bank_count -= 1
-        return true
   }
   { -- 11 ACTION emergency ritual
     trigger: {danger_increasing: 2.25}
@@ -431,7 +421,6 @@ icons = {
             data.cash += element.data.cash
             data.danger += element.data.danger
             data.danger_rate += element.data.danger_rate
-        return true
   }
   { -- 12 RESOURCE class-d personnel
     trigger: {agent_count: 40}
@@ -458,7 +447,6 @@ icons = {
             data.cash_rate -= element.data.cash_rate
             data.danger_rate -= element.data.danger_rate
             data.class_d_count -= 1
-        return true
   }
   { -- 13 SCP the plague doctor
     trigger: {scp: 0.10}
@@ -473,7 +461,6 @@ icons = {
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
-        return true
   }
   { -- 14 SCP MalO (never be alone)
     trigger: {scp: 0.001, multiple: true}
@@ -527,7 +514,6 @@ icons = {
               data.automatic_expeditions = false
               fg\setText "INACTIVE"
             bg\setSize fg\getSize!
-        return true
       -- dunno why these are needed...
       bg\setSize fg\getSize!
       fg\align!
@@ -574,7 +560,6 @@ icons = {
             bg\setSize fg\getSize!
         elseif button == pop.constants.right_mouse
           icons.scp_info element
-        return true
       -- dunno why these are needed...
       bg\setSize fg\getSize!
       fg\align!
@@ -592,7 +577,6 @@ icons = {
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
-        return true
   }
   { -- 18 SCP RONALD REGAN CUT UP WHILE TALKING
     trigger: {scp: 0.15}
@@ -611,7 +595,6 @@ icons = {
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
-        return true
   }
   { -- 20 SCP the director's cut
     trigger: {scp: 0.25}
@@ -621,7 +604,6 @@ icons = {
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
-        return true
   }
   { -- 21 SCP desert in a can
     trigger: {scp: 0.006, multiple: true}
@@ -659,7 +641,6 @@ icons = {
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
-        return true
   }
   { -- 25 SCP the clockworks
     trigger: {scp: 0.15}
@@ -676,7 +657,6 @@ icons = {
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
           icons.scp_info element
-        return true
   }
   { -- 26 EVENT clockwork-caused breach
     trigger: {random: 0.001/60, multiple: true} -- no idea what rate this is
@@ -702,7 +682,6 @@ icons = {
             data.cash_rate -= element.data.cash_rate
             data.danger_rate -= element.data.danger_rate
             element\delete!
-        return true
   }
   { -- 27 SCP best of the 5th dimension
     trigger: {random: 0.01/60}   -- 1% per minute
@@ -730,7 +709,6 @@ icons = {
               element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n#{data.scp092_researched_count}/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
         elseif button == pop.constants.right_mouse
           icons.scp_info element
-        return true
   }
   { -- 28 SCP deathly video tape
     trigger: {scp: 0.4}
