@@ -761,6 +761,7 @@ icons = {
     research: 1
     apply: (element, build_only) ->
       unless build_only
+        data.scp_descriptions[30] = 2
         data.cash_rate -= element.data.cash_rate
         data.research += element.data.research
       element.clicked = (x, y, button) =>
@@ -787,6 +788,7 @@ icons = {
 for i=1, #icons
   icons[i].id = i
 
+-- when descriptions have been set to an alternate, load() function handles this
 for id, description in pairs descriptions
   icons[id].description = description[1]
 
