@@ -12,6 +12,13 @@ timers = {
       update: (self, dt, ...) ->
         fn dt, ...
     }
+  remove: (timer) ->
+    for i=1, #timers
+      if timers[i] == timer
+        table.remove timers, i
+        return
+
+    error "Invalid timer specified."
 }
 
 return timers
