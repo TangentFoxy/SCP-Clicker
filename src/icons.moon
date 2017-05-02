@@ -679,19 +679,21 @@ icons = {
         return true
   }
   { -- 26 EVENT clockwork-caused breach
-    trigger: {random: 0.001/60, multiple: true} -- no idea what rate this is
+    trigger: {random: 0.01/60, multiple: true} -- 1% per minute
     icon: "icons/clockwork.png"
     tooltip: "Containment breach caused by SCP-914!\n${cash_rate} until contained, ${danger_rate} until contained\n${cash} to attempt containment"
     tip: "Breaches can escalate danger and cause a loss pretty quickly. Be wary, and stop them quickly."
     tipOnce: true
     cash_rate: -40
-    danger_rate: 1.5
+    danger_rate: 1.6
+    danger: 30
     cash: -10000
     apply: (element, build_only) ->
       unless build_only
         if data.cleared_scps[25] -- if the SCP has been found
           data.cash_rate += element.data.cash_rate
           data.danger_rate += element.data.danger_rate
+          data.danger += element.data.danger
         else
           element\delete!
           return false --cancel, we don't have it
@@ -702,7 +704,6 @@ icons = {
             data.cash_rate -= element.data.cash_rate
             data.danger_rate -= element.data.danger_rate
             element\delete!
-        return true
   }
   { -- 27 SCP best of the 5th dimension
     trigger: {random: 0.01/60}   -- 1% per minute

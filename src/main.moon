@@ -13,6 +13,7 @@ data = require "data"
 settings = require "settings"
 timers = require "timers"
 state = require "state"
+descriptions = require "descriptions"
 
 icon_size = 128
 margin = 8
@@ -125,6 +126,9 @@ load = ->
     for id in pairs data.cleared_randoms
       unless icons[id].trigger.multiple
         icons[id].trigger.random = nil
+    for id, description in pairs descriptions
+      if data.scp_descriptions[id]
+        icons[id].description = description[data.scp_descriptions[id]]
     for id in *data.icons
       icons.add_icon(icons[id], true)
 

@@ -18,6 +18,7 @@ data = {
   cleared_scps: {}
   cleared_randoms: {}
   scp_multiples: {}
+  scp_descriptions: {}
 
   scp_count: 0
   savings_accounts: 0
