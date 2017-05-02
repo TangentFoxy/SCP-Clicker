@@ -128,7 +128,10 @@ icons = {
     tbl = {}
     for key, icon in ipairs icons
       if icon.trigger.scp
-        tbl[key] = icon.trigger.scp
+        if icon.trigger.cleared_scp and data.cleared_scps[icon.trigger.cleared_scp]
+          tbl[key] = icon.trigger.scp
+        else
+          tbl[key] = icon.trigger.scp
     scp = icons[weightedchoice tbl]
     if scp.trigger.multiple
       if data.scp_multiples[scp.id]
@@ -659,7 +662,7 @@ icons = {
           icons.scp_info element
   }
   { -- 26 EVENT clockwork-caused breach
-    trigger: {random: 0.01/60, multiple: true} -- 1% per minute
+    trigger: {random: 0.01/60, cleared_scp: 25, multiple: true} -- 1% per minute
     icon: "icons/clockwork.png"
     tooltip: "Containment breach caused by SCP-914!\n${cash_rate} until contained, ${danger_rate} until contained\n${cash} to attempt containment"
     tip: "Breaches can escalate danger and cause a loss pretty quickly. Be wary, and stop them quickly."
@@ -670,13 +673,9 @@ icons = {
     cash: -10000
     apply: (element, build_only) ->
       unless build_only
-        if data.cleared_scps[25] -- if the SCP has been found
-          data.cash_rate += element.data.cash_rate
-          data.danger_rate += element.data.danger_rate
-          data.danger += element.data.danger
-        else
-          element\delete!
-          return false --cancel, we don't have it
+        data.cash_rate += element.data.cash_rate
+        data.danger_rate += element.data.danger_rate
+        data.danger += element.data.danger
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash
@@ -752,6 +751,22 @@ icons = {
         data.research += element.data.research
       element.clicked = (x, y, button) =>
         if button == pop.constants.right_mouse
+          icons.scp_info element
+  }
+  { -- 31 EVENT pink flamingo breach
+    trigger: {random: 0.04/60, cleared_scp: 30} -- 4% per minute
+    icon: "icons/files.png"
+    tooltip: "Incident 1507-A\n${cash_rate} increase in containment cost, ${research} research gained\n(click to read, right-click to dismiss)"
+    cash_rate: 5
+    research: 1
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate -= element.data.cash_rate
+        data.research += element.data.research
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          element\delete!
+        elseif button == pop.constants.right_mouse
           icons.scp_info element
   }
   --TODO make expeditions have a failure rate that increases as more SCPs are discovered
