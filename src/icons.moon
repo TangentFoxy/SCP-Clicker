@@ -124,7 +124,12 @@ icons = {
       display_text\setText newText
       display_text\move 4, 42
 
-  choose_scp: ->
+  choose_scp: (flags) ->
+    -- first determine whether we return anything at all
+    unless flags == "debug"
+      if math.random! > (#icons - #data.cleared_scps) / #icons
+        return false
+
     tbl = {}
     for key, icon in ipairs icons
       if icon.trigger.scp
@@ -133,6 +138,7 @@ icons = {
         else
           tbl[key] = icon.trigger.scp
     scp = icons[weightedchoice tbl]
+
     if scp.trigger.multiple
       if data.scp_multiples[scp.id]
         data.scp_multiples[scp.id] += 1
@@ -428,7 +434,7 @@ icons = {
   { -- 12 RESOURCE class-d personnel
     trigger: {agent_count: 40}
     icon: "icons/convict.png"
-    tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate} (${cash} to terminate)"
+    tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate} (${cash} to terminate)\n(at least 1 agent per 10 Class D personnel required)"
     cash: -0.15 -- note: this is used for terminating only
     cash_rate: -0.25
     danger_rate: -0.01
@@ -440,7 +446,7 @@ icons = {
         bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
-          if data.cash >= math.abs element.data.cash_rate
+          if data.cash >= math.abs element.data.cash_rate and data.agent_count >= data.class_d_count / 10
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.class_d_count += 1
