@@ -3,6 +3,7 @@ import graphics from love
 import split_newline from require "util"
 
 pop = require "lib.pop"
+beholder = require "lib.beholder"
 data = require "data"
 timers = require "timers"
 descriptions = require "descriptions"
@@ -148,6 +149,7 @@ icons = {
       scp.trigger.scp = nil
     unless data.cleared_scps[scp.id]
       data.scp_count += 1
+      beholder.trigger "NEW_SCP"
     data.cleared_scps[scp.id] = true
     return scp
 
@@ -446,7 +448,7 @@ icons = {
         bg\setSize fg\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
-          if data.cash >= math.abs element.data.cash_rate and data.agent_count >= data.class_d_count / 10
+          if data.cash >= math.abs(element.data.cash_rate) and data.agent_count > data.class_d_count / 10
             data.cash_rate += element.data.cash_rate
             data.danger_rate += element.data.danger_rate
             data.class_d_count += 1
@@ -776,7 +778,58 @@ icons = {
         elseif button == pop.constants.right_mouse
           icons.scp_info element
   }
-  --TODO make expeditions have a failure rate that increases as more SCPs are discovered
+  { -- 32 TOGGLE automatic research (super dangerous!)
+    trigger: {all: {danger_decreasing: -6, scp_count: 8}}
+    icon: "icons/fizzing-flask.png"
+    tooltip: "Research all contained SCPs automatically.\n${cash_rate} per SCP, ${research_rate} per SCP"
+    tip: "Be careful about being too aggressive with research..."
+    cash_rate: -1.2
+    research_rate: 0.8
+    apply: (element) ->
+      bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      local recurse, beholderID
+      recurse = (element=pop.screen) ->
+        if element.data.id and element.data.id == 2 -- triggers icon 2
+          element\clicked 0, 0, pop.constants.left_mouse
+        else
+          for child in *element.child
+            recurse child
+      newSCP = ->
+        data.cash_rate += element.data.cash_rate
+        data.research_rate += element.data.research_rate
+      element.update = =>
+        if data.danger <= 0.01 -- won't activate unless you have 1% or less danger
+          recurse!
+      if data.automatic_research
+        element.data.update = true
+        fg\setText "ACTIVE"
+        beholderID = beholder.observe "NEW_SCP", newSCP!
+      else
+        element.data.update = false
+        fg\setText "INACTIVE"
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          -- if turning off, or have cash to turn on
+          if not element.data.update or data.cash >= math.abs element.data.cash_rate
+            element.data.update = not element.data.update
+            if element.data.update
+              beholderID = beholder.observe "NEW_SCP", newSCP!
+              data.cash_rate += element.data.cash_rate * data.scp_count
+              data.research_rate += element.data.research_rate * data.scp_count
+              data.automatic_research = true
+              fg\setText "ACTIVE"
+            else
+              beholder.stopObserving(beholderID)
+              data.cash_rate -= element.data.cash_rate * data.scp_count
+              data.research_rate -= element.data.research_rate * data.scp_count
+              data.automatic_research = false
+              fg\setText "INACTIVE"
+            bg\setSize fg\getSize!
+      -- dunno why these are needed...
+      bg\setSize fg\getSize!
+      fg\align!
+  }
   --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
   --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
   --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)

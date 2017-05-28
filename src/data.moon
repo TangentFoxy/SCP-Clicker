@@ -33,6 +33,7 @@ data = {
   ronald_regan: false
   book_of_endings: false
   scp092_researched_count: 0
+  automatic_research: false
 
   version: 4
 }
