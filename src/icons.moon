@@ -127,7 +127,11 @@ icons = {
       display_text\move 4, 42
 
   choose_scp: (flags) ->
-    -- first determine whether we return anything at all
+    -- warn if we lack containment capacity
+    if data.scp_count == data.site_count * 5
+      return icons[37]
+
+    -- then determine whether we return anything at all
     unless flags == "debug"
       if math.random! > (#icons - #data.cleared_scps) / #icons
         return false
@@ -207,12 +211,12 @@ icons = {
     bg\setSize fg\getSize!
     fg\align!
 
-  trigger_click: (id, element=pop.screen) ->
+  trigger_click: (id, click=pop.constants.left_mouse, element=pop.screen) ->
     if element.data.id and element.data.id == id
-      element\clicked 0, 0, pop.constants.left_mouse
+      element\clicked 0, 0, click
     else
       for child in *element.child
-        icons.trigger_click id, child
+        icons.trigger_click id, click, child
 
   { -- 1 ACTION get cash
     trigger: {danger: 0.0215}
@@ -458,10 +462,6 @@ icons = {
         data.cash_rate -= element.data.cash_rate
         data.danger_rate -= element.data.danger_rate
         data.class_d_count -= 1
-      --beholder.observe "AGENT_LOST", ->
-      --  unless data.agent_rehire_enabled
-      --    while data.class_d_count / 10 > data.agent_count
-      --      terminate!
       element.update = =>
         while data.class_d_count / 10 > data.agent_count
           terminate!
@@ -715,7 +715,8 @@ icons = {
     apply: (element, build_only) ->
       element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n#{data.scp092_researched_count}/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
       update_cash = ->
-        icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.65 + 1.05 ^ (data.scp092_researched_count / 25) - 55)
+        --icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.65 + 1.05 ^ (data.scp092_researched_count / 25) - 55)
+        icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.75 + 1.1 ^ (data.scp092_researched_count / 25) - 55)
       update_cash!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
@@ -796,7 +797,7 @@ icons = {
           element\delete!
   }
   { -- 32 TOGGLE automatic research (super dangerous!)
-    trigger: {all: {danger_decreasing: -6, scp_count: 8}}
+    trigger: {all: {danger_decreasing: -11, scp_count: 10}}
     icon: "icons/fizzing-flask.png"
     tooltip: "Research all contained SCPs automatically.\n${cash_rate} per SCP, ${research_rate} per SCP"
     tip: "Be careful about being too aggressive with research..."
@@ -844,10 +845,9 @@ icons = {
   { -- 33 TOGGLE automatically recruit class D's
     trigger: {class_d_count: 50}
     icon: "icons/mug-shot.png"
-    tooltip: "Receruit Class D personnel automatically.\n${cash_rate}"
+    tooltip: "Recruit Class D personnel automatically.\n${cash_rate}"
     cash_rate: -2.25
     apply: (element) ->
-      icons.toggleable_scp element, "automatic_class_d"
       bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       if data.automatic_class_d
@@ -878,11 +878,11 @@ icons = {
   }
   { -- 34 EVENT desert in a can MAJOR breach
     trigger: {scps_researched: {scp: 21, random: 0.02}} --a 2% chance every time SCPs are researched
-    icon: "icons/files.png" --NOTE may want a more aggressive warning-type icon
+    icon: "icons/heat-haze.png"
     tooltip: "Test Log 622-4, Note from O5-█\n${cash_rate} until contained, ${danger_rate} until contained"
-    cash_rate: -84
-    danger_rate: 4.6
-    danger: 27
+    cash_rate: -160
+    danger_rate: 7.2
+    danger: 31
     apply: (element, build_only) ->
       unless build_only
         data.cash_rate += element.data.cash_rate
@@ -892,13 +892,112 @@ icons = {
         if button == pop.constants.right_mouse
           icons.scp_info element
   }
+  { -- 35 TOGGLE class D termination policy
+    trigger: {class_d_count: 200}
+    icon: "icons/gibbet.png"
+    tooltip: "Class D personnel monthly termination policy.\n${cash_rate}, ${danger_rate}\n(Class D personnel count will fluctuate as they are terminated and replaced.)"
+    cash_rate: -35
+    danger_rate: -20
+    apply: (element) ->
+      bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      if data.class_d_termination_policy
+        fg\setText "ACTIVE"
+      else
+        fg\setText "INACTIVE"
+      clock, interval = 0, 0
+      element.update = (dt) =>
+        if data.class_d_termination_policy
+          clock += dt
+          if clock >= interval + 1/10
+            interval += 1/10
+            count = data.class_d_count / 200 * math.sin(2*math.pi / 10 * clock) -- period of 10 seconds
+            if count < 0
+              for i=1, math.abs count
+                icons.trigger_click 12, pop.constants.right_mouse
+            else
+              for i=1, count
+                icons.trigger_click 12
+            if clock >= 10
+              clock -= 10
+              interval -= 10
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.class_d_termination_policy or data.cash >= math.abs element.data.cash_rate
+            data.class_d_termination_policy = not data.class_d_termination_policy
+            if data.class_d_termination_policy
+              data.cash_rate += element.data.cash_rate
+              data.danger_rate += element.data.danger_rate
+              fg\setText "ACTIVE"
+            else
+              data.cash_rate -= element.data.cash_rate
+              data.danger_rate -= element.data.danger_rate
+              fg\setText "INACTIVE"
+            bg\setSize fg\getSize!
+      -- dunno why these are needed...
+      bg\setSize fg\getSize!
+      fg\align!
+  }
+  { -- 36 RESOURCE containment sites
+    trigger: {scp_count: 3}
+    icon: "icons/military-fort.png"
+    tooltip: "Build a new containment site.\n${cash}, ${cash_rate}\n(1 containment site is needed for every 5 SCPs.)"
+    cash: -2500
+    cash_rate: -5
+    apply: (element) ->
+      bg = pop.box(element)\align "left", "bottom"
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      fg.update = =>
+        fg\setText data.site_count
+        bg\setSize fg\getSize!
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.cash >= math.abs element.data.cash
+            data.cash += element.data.cash
+            data.cash_rate += element.data.cash_rate
+            data.site_count += 1
+        elseif button == pop.constants.right_mouse
+          if data.scp_count <= (data.site_count - 1) * 5
+            data.cash -= element.data.cash / 2
+            data.cash_rate -= element.data.cash_rate
+            data.site_count -= 1
+  }
+  { -- 37 EVENT warning about lack of containment sites
+    trigger: {multiple: true} -- no trigger on this one, choose_scp activates it
+    icon: "icons/hazard-sign.png"
+    tooltip: "There is no more room for SCPs! Build more containment sites."
+    apply: (element) ->
+      element.clicked = =>
+        element\delete!
+  }
+  { -- 38 RESOURCE (gold?) mines
+    trigger: {cash: 16000, cash_rate: 200}
+    icon: "icons/gold-mine.png"
+    tooltip: "Open a mine.\n${cash}, ${cash_rate}"
+    cash: -8500
+    cash_rate: 26
+    apply: (element) ->
+      bg = pop.box(element)\align "left", "bottom"
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      fg.update = =>
+        fg\setText data.mine_count
+        bg\setSize fg\getSize!
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.cash >= math.abs element.data.cash
+            data.cash += element.data.cash
+            data.cash_rate += element.data.cash_rate
+            data.mine_count += 1
+        elseif button == pop.constants.right_mouse and data.mine_count > 0
+          data.cash -= element.data.cash * 0.2
+          data.cash_rate -= element.data.cash_rate * 1.05
+          data.mine_count -= 1
+  }
 
-  --TODO make a Class D termination policy that when active reduces danger but increases cost on a regularly timed basis
-  --     it also fluctuates the count of Class D personnel by randomly clicking hire / unhire, using a sine function to make a steady curve
-  --TODO make a vault icon that is used when you have more than 5 SCPs that is needed to contain more SCPs (build site)
-  --{
-    --trigger: {cash: 16000}
-    -- a better source of income is needed
+  --{ -- ?? TOGGLE play the stock market
+  --  trigger: {cash: 1000000, cash_rate: 1500}
+  --  icon: "icons/chart.png"
+  --  -- a better source of income is needed
   --}
 }
 

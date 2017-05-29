@@ -120,6 +120,9 @@ load = ->
           data.scp_multiples[id] = 2   -- just assume we have two instances
       data.check_for_updates = nil
       loaded_data.version = 4
+    if loaded_data.version == 4
+      data.site_count = math.floor loaded_data.scp_count / 5 + 2
+      loaded_data.version = 5
 
     -- apply loaded data
     for id in pairs data.cleared_scps
@@ -141,9 +144,11 @@ game_over = (reason) ->
   pop.text(overlay, "Game Over", 60)\align("center", "top")\move nil, 20
   pop.text(overlay, reason, 24)\align "center", "center"
   pop.text(overlay, "Click to restart.", 20)\align("center", "bottom")\move nil, -16
+  wait = love.timer.getTime!
   overlay.clicked = (x, y, button) =>
-    exit_action = "reset_data"
-    love.event.quit "restart"
+    if love.timer.getTime! - wait >= 1
+      exit_action = "reset_data"
+      love.event.quit "restart"
 
 love.load = ->
   pop.load "gui"
@@ -576,6 +581,13 @@ love.keypressed = (key) ->
 love.quit = ->
   if exit_action == "reset_data"
     love.filesystem.remove "save.txt"
+    if data.cash < 0
+      data.original_cash = data.cash
+      data.cash = 10000
+    if data.danger > 90
+      data.original_danger = data.danger
+      data.danger = 0
+    love.filesystem.write "save.#{os.date "%Y-%m-%d.%H-%M-%S"}.txt", serialize data
   elseif exit_action == "save_data"
     save!
 

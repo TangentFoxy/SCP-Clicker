@@ -24,19 +24,23 @@ data = {
   savings_accounts: 0
   bank_count: 0
   agent_count: 0
-  expedition_running: false
   expedition_progress: 0
-  agent_rehire_enabled: false
   class_d_count: 0
+  scp092_researched_count: 0
+  site_count: 1
+  mine_count: 0
+
+  expedition_running: false
+  agent_rehire_enabled: false
   automatic_expeditions: false
   syringe_usage: false
   ronald_regan: false
   book_of_endings: false
-  scp092_researched_count: 0
   automatic_research: false
   automatic_class_d: false
+  class_d_termination_policy: false
 
-  version: 4
+  version: 5
 }
 
 return data
