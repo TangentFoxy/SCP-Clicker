@@ -4,6 +4,7 @@ import split_newline from require "util"
 
 pop = require "lib.pop"
 beholder = require "lib.beholder"
+
 data = require "data"
 timers = require "timers"
 descriptions = require "descriptions"
@@ -153,19 +154,21 @@ icons = {
     data.cleared_scps[scp.id] = true
     return scp
 
-  basic: (element) ->
+  basic_scp: (element) ->
     element.clicked = (x, y, button) =>
       if button == pop.constants.left_mouse
         data.cash += element.data.cash if element.data.cash
         data.research += element.data.research if element.data.research
         data.danger += element.data.danger if element.data.danger
-
-  multiple: (element, build_only) ->
+  multiple_scp: (element, build_only) ->
     count = 0
     for child in *icons.icon_grid.child
       if child.data.id == element.data.id
         count += 1
     if count > 1
+      unless build_only
+        data.cash_rate += element.data.cash_rate if element.data.cash_rate
+        data.research += element.data.research if element.data.research
       return false
     bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
     fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
@@ -178,8 +181,7 @@ icons = {
     element.clicked = (x, y, button) =>
       if button == pop.constants.right_mouse
         icons.scp_info element
-
-  toggleable: (element, data_key) ->
+  toggleable_scp: (element, data_key) ->
     bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
     fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
     if data[data_key]
@@ -205,6 +207,13 @@ icons = {
     bg\setSize fg\getSize!
     fg\align!
 
+  trigger_click: (id, element=pop.screen) ->
+    if element.data.id and element.data.id == id
+      element\clicked 0, 0, pop.constants.left_mouse
+    else
+      for child in *element.child
+        icons.trigger_click id, child
+
   { -- 1 ACTION get cash
     trigger: {danger: 0.0215}
     icon: "icons/banknote.png"
@@ -213,7 +222,7 @@ icons = {
     cash: 100
     danger: 0.2
     apply: (element) ->
-      icons.basic element
+      icons.basic_scp element
   }
   { -- 2 ACTION research SCPs
     trigger: {scp_count: 2}
@@ -226,6 +235,7 @@ icons = {
         if button == pop.constants.left_mouse
           data.research += element.data.research * data.scp_count
           data.danger += math.min element.data.danger * data.scp_count, 99
+          beholder.trigger "SCPS_RESEARCHED"
   }
   { -- 3 RESOURCE savings accounts
     trigger: {cash: 800}
@@ -291,6 +301,7 @@ icons = {
           data.danger_rate -= element.data.danger_rate
           data.agent_count -= 1
           icons[9].agent_count = data.agent_count
+          beholder.trigger "AGENT_LOST"
   }
   { -- 6 ACTION go on expedition
     trigger: {cash: 6000}
@@ -333,7 +344,7 @@ icons = {
     cash_rate: -0.2
     research: 4
     apply: (element, build_only) ->
-      icons.multiple element, build_only
+      icons.multiple_scp element, build_only
   }
   { -- 8 EVENT agent deaths
     trigger: {random: 0.45/60, multiple: true} -- 45% chance per minute
@@ -347,6 +358,7 @@ icons = {
           data.agent_count -= 1
           data.cash_rate -= icons[5].cash_rate*0.9
           data.danger_rate -= icons[5].danger_rate*1.1
+          beholder.trigger "AGENT_LOST"
         else
           element\delete!
           return false -- cancel the action!
@@ -441,6 +453,18 @@ icons = {
     cash_rate: -0.25
     danger_rate: -0.01
     apply: (element) ->
+      terminate = ->
+        data.cash += element.data.cash
+        data.cash_rate -= element.data.cash_rate
+        data.danger_rate -= element.data.danger_rate
+        data.class_d_count -= 1
+      --beholder.observe "AGENT_LOST", ->
+      --  unless data.agent_rehire_enabled
+      --    while data.class_d_count / 10 > data.agent_count
+      --      terminate!
+      element.update = =>
+        while data.class_d_count / 10 > data.agent_count
+          terminate!
       bg = pop.box(element)\align "left", "bottom"
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       fg.update = =>
@@ -454,10 +478,7 @@ icons = {
             data.class_d_count += 1
         elseif button == pop.constants.right_mouse and data.class_d_count > 0
           if data.cash >= math.abs element.data.cash
-            data.cash += element.data.cash
-            data.cash_rate -= element.data.cash_rate
-            data.danger_rate -= element.data.danger_rate
-            data.class_d_count -= 1
+            terminate!
   }
   { -- 13 SCP the plague doctor
     trigger: {scp: 0.10}
@@ -480,7 +501,7 @@ icons = {
     cash_rate: -0.3
     research: 6
     apply: (element, build_only) ->
-      icons.multiple element, build_only
+      icons.multiple_scp element, build_only
   }
   { -- 15 TOGGLE automatic expeditions
     trigger: {all: {danger_decreasing: -3, scp_count: 3}}
@@ -492,17 +513,9 @@ icons = {
     apply: (element) ->
       bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
-      local recurse
-      recurse = (element=pop.screen) ->
-        if element.data.id and element.data.id == 6
-          if data.cash >= math.abs element.data.cash * 1.25 -- won't activate unless you have $6,250 cash
-            element\clicked 0, 0, pop.constants.left_mouse
-        else
-          for child in *element.child
-            recurse child
       element.update = =>
         unless data.expedition_running
-          recurse!
+          icons.trigger_click 6
       if data.automatic_expeditions
         element.data.update = true
         fg\setText "ACTIVE"
@@ -596,7 +609,7 @@ icons = {
     cash_rate: -6.2
     research_rate: 0.4
     apply: (element, build_only) ->
-      icons.toggleable element, "ronald_regan"
+      icons.toggleable_scp element, "ronald_regan"
   }
   { -- 19 SCP self-defense sugar
     trigger: {scp: 0.25}
@@ -622,7 +635,7 @@ icons = {
     tooltip: "SCP-622 \"Desert in a Can\"\n${cash_rate} containment cost per instance"
     cash_rate: -0.28
     apply: (element, build_only) ->
-      icons.multiple element, build_only
+      icons.multiple_scp element, build_only
   }
   { -- 22 SCP book of endings
     trigger: {scp: 0.20}
@@ -631,7 +644,7 @@ icons = {
     cash_rate: -7.5
     research_rate: 5
     apply: (element, build_only) ->
-      icons.toggleable element, "book_of_endings"
+      icons.toggleable_scp element, "book_of_endings"
   }
   { -- 23 SCP diet ghost
     trigger: {scp: 0.002, multiple: true}
@@ -639,7 +652,7 @@ icons = {
     tooltip: "SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost per instance"
     cash_rate: -0.26
     apply: (element, build_only) ->
-      icons.multiple element, build_only
+      icons.multiple_scp element, build_only
   }
   { -- 24 SCP book of dreams
     trigger: {scp: 0.30}
@@ -754,6 +767,8 @@ icons = {
     cash_rate: -3.2
     research: 4.2
     apply: (element, build_only) ->
+      if build_only and data.cleared_randoms[31]
+        element.data.cash_rate -= icons[31].cash_rate
       unless build_only
         data.cash_rate += element.data.cash_rate
         data.research += element.data.research
@@ -769,14 +784,16 @@ icons = {
     research: 1
     apply: (element, build_only) ->
       unless build_only
+        icons[30].cash_rate -= element.data.cash_rate
+        icons[30].description = descriptions[30][2]
         data.scp_descriptions[30] = 2
         data.cash_rate -= element.data.cash_rate
         data.research += element.data.research
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
-          element\delete!
-        elseif button == pop.constants.right_mouse
           icons.scp_info element
+        elseif button == pop.constants.right_mouse
+          element\delete!
   }
   { -- 32 TOGGLE automatic research (super dangerous!)
     trigger: {all: {danger_decreasing: -6, scp_count: 8}}
@@ -788,23 +805,17 @@ icons = {
     apply: (element) ->
       bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
-      local recurse, beholderID
-      recurse = (element=pop.screen) ->
-        if element.data.id and element.data.id == 2 -- triggers icon 2
-          element\clicked 0, 0, pop.constants.left_mouse
-        else
-          for child in *element.child
-            recurse child
+      local beholderID
       newSCP = ->
         data.cash_rate += element.data.cash_rate
         data.research_rate += element.data.research_rate
       element.update = =>
         if data.danger <= 0.01 -- won't activate unless you have 1% or less danger
-          recurse!
+          icons.trigger_click 2
       if data.automatic_research
         element.data.update = true
         fg\setText "ACTIVE"
-        beholderID = beholder.observe "NEW_SCP", newSCP!
+        beholderID = beholder.observe "NEW_SCP", newSCP
       else
         element.data.update = false
         fg\setText "INACTIVE"
@@ -814,7 +825,7 @@ icons = {
           if not element.data.update or data.cash >= math.abs element.data.cash_rate
             element.data.update = not element.data.update
             if element.data.update
-              beholderID = beholder.observe "NEW_SCP", newSCP!
+              beholderID = beholder.observe "NEW_SCP", newSCP
               data.cash_rate += element.data.cash_rate * data.scp_count
               data.research_rate += element.data.research_rate * data.scp_count
               data.automatic_research = true
@@ -830,9 +841,58 @@ icons = {
       bg\setSize fg\getSize!
       fg\align!
   }
-  --TODO make a breach of SCP-622 (desert in a can) that is extremely costly to contain, and dangerous when uncontained
-  --     THIS BREACH CAN ONLY TRIGGER WHEN USING THE RESEARCH SCPs BUTTON !!
-  --TODO make a research policy that can trigger breach of SCP-622, but gives constant research and danger based on SCP count (automated version of the research SCPs button basically)
+  { -- 33 TOGGLE automatically recruit class D's
+    trigger: {class_d_count: 50}
+    icon: "icons/mug-shot.png"
+    tooltip: "Receruit Class D personnel automatically.\n${cash_rate}"
+    cash_rate: -2.25
+    apply: (element) ->
+      icons.toggleable_scp element, "automatic_class_d"
+      bg = pop.box(element)\align("left", "bottom")\setColor 0, 0, 0, 255
+      fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      if data.automatic_class_d
+        fg\setText "ACTIVE"
+      else
+        fg\setText "INACTIVE"
+      clock = 0
+      element.update = (dt) =>
+        if data.automatic_class_d
+          clock += dt
+          if clock >= 0.5
+            clock -= 0.5
+            icons.trigger_click 12
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          if data.automatic_class_d or data.cash >= math.abs element.data.cash_rate
+            data.automatic_class_d = not data.automatic_class_d
+            if data.automatic_class_d
+              data.cash_rate += element.data.cash_rate
+              fg\setText "ACTIVE"
+            else
+              data.cash_rate -= element.data.cash_rate
+              fg\setText "INACTIVE"
+            bg\setSize fg\getSize!
+      -- dunno why these are needed...
+      bg\setSize fg\getSize!
+      fg\align!
+  }
+  { -- 34 EVENT desert in a can MAJOR breach
+    trigger: {scps_researched: {scp: 21, random: 0.02}} --a 2% chance every time SCPs are researched
+    icon: "icons/files.png" --NOTE may want a more aggressive warning-type icon
+    tooltip: "Test Log 622-4, Note from O5-█\n${cash_rate} until contained, ${danger_rate} until contained"
+    cash_rate: -84
+    danger_rate: 4.6
+    danger: 27
+    apply: (element, build_only) ->
+      unless build_only
+        data.cash_rate += element.data.cash_rate
+        data.danger_rate += element.data.danger_rate
+        data.danger += element.data.danger
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.right_mouse
+          icons.scp_info element
+  }
+
   --TODO make a Class D termination policy that when active reduces danger but increases cost on a regularly timed basis
   --     it also fluctuates the count of Class D personnel by randomly clicking hire / unhire, using a sine function to make a steady curve
   --TODO make a vault icon that is used when you have more than 5 SCPs that is needed to contain more SCPs (build site)
@@ -840,8 +900,6 @@ icons = {
     --trigger: {cash: 16000}
     -- a better source of income is needed
   --}
-  --TODO getting and terminating class D's should be in 5's
-  --      adjust values to represent five and increase/decrease by five (if can't for some reason, decrease by however many can)
 }
 
 for i=1, #icons

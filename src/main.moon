@@ -8,6 +8,8 @@ import graphics, mouse from love
 import round, random, serialize, deserialize, shuffle from require "lib.lume"
 
 pop = require "lib.pop"
+beholder = require "lib.beholder"
+
 icons = require "icons"
 data = require "data"
 settings = require "settings"
@@ -126,6 +128,7 @@ load = ->
     for id in pairs data.cleared_randoms
       unless icons[id].trigger.multiple
         icons[id].trigger.random = nil
+        icons[id].trigger.scps_researched = nil
     for id, description in pairs descriptions
       if data.scp_descriptions[id]
         icons[id].description = description[data.scp_descriptions[id]]
@@ -413,6 +416,18 @@ love.load = ->
       name = table.remove icon_list, 1
       pop.icon(align_grid, {w: icon_size, h: icon_size, icon: "icons/#{name}", tooltip: ""})\move (x-1)*icon_size + x*margin, (y-1)*icon_size + y*margin
 
+  beholder.observe "SCPS_RESEARCHED", ->
+    for icon in *icons
+      unless icon.activated
+        if icon.trigger.scps_researched
+          -- figure out whether or not to active based on randomness
+          if random! <= icon.trigger.scps_researched.random
+            if icons.add_icon icon
+              unless icon.trigger.multiple
+                icon.trigger.scps_researched = nil
+              data.cleared_randoms[icon.id] = true
+            break
+
 love.update = (dt) ->
   if settings.check_for_updates
     receive = love.thread.getChannel "receive"
@@ -479,6 +494,8 @@ love.update = (dt) ->
 
   for icon in *icons
     unless icon.activated
+      if icon.trigger.scps_researched   -- these are handled by an observer defined in love.load
+        continue
       if icon.trigger.danger_increasing and icon.trigger.danger_increasing <= data.danger_rate + data.danger * data.danger_multiplier
         icons.add_icon icon
       elseif icon.trigger.all

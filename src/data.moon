@@ -34,6 +34,7 @@ data = {
   book_of_endings: false
   scp092_researched_count: 0
   automatic_research: false
+  automatic_class_d: false
 
   version: 4
 }
