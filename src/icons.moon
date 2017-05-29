@@ -164,6 +164,9 @@ icons = {
         data.cash += element.data.cash if element.data.cash
         data.research += element.data.research if element.data.research
         data.danger += element.data.danger if element.data.danger
+        data.cash_rate += element.data.cash_rate if element.data.cash_rate
+        data.research_rate += element.data.research_rate if element.data.research_rate
+        data.danger_rate += element.data.danger_rate if element.data.danger_rate
   multiple_scp: (element, build_only) ->
     count = 0
     for child in *icons.icon_grid.child
@@ -992,6 +995,23 @@ icons = {
           data.cash -= element.data.cash * 0.2
           data.cash_rate -= element.data.cash_rate * 1.05
           data.mine_count -= 1
+  }
+  { -- 39 SCP broken spybot
+    trigger: {scp: 0.3}
+    icon: "icons/metal-disc.png"
+    tooltip: "SCP-1599 \"Broken Spybot\"\n${cash_rate} research cost, ${research_rate}"
+    cash_rate: -8.4
+    research_rate: 5.2
+    apply: (element, build_only) ->
+      icons.toggleable_scp element, "broken_spybot"
+  }
+  { -- 40 SCP $҉ 585.98
+    trigger: {scp: 0.24}
+    icon: "icons/price-tag.png"
+    tooltip: "SCP-2395 \"$҉ 585.98\"\n${cash_rate} containment cost"
+    cash_rate: -3.15
+    apply: (element, build_only) ->
+      icons.basic_scp element
   }
 
   --{ -- ?? TOGGLE play the stock market

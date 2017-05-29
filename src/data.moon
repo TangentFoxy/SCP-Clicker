@@ -39,6 +39,7 @@ data = {
   automatic_research: false
   automatic_class_d: false
   class_d_termination_policy: false
+  broken_spybot: false
 
   version: 5
 }
