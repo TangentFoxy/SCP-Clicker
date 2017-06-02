@@ -9,6 +9,7 @@ import round, random, serialize, deserialize, shuffle from require "lib.lume"
 
 pop = require "lib.pop"
 beholder = require "lib.beholder"
+slam = require "lib.slam"
 
 icons = require "icons"
 data = require "data"
@@ -20,7 +21,7 @@ descriptions = require "descriptions"
 icon_size = 128
 margin = 8
 
-local tooltip_box, tooltip_text, tip, paused_overlay, exit_action, version_display, autosave_timer
+local tooltip_box, tooltip_text, tip, paused_overlay, exit_action, version_display, autosave_timer, sfxClick
 
 deepcopy = (orig) ->
   orig_type = type(orig)
@@ -433,6 +434,8 @@ love.load = ->
               data.cleared_randoms[icon.id] = true
             break
 
+  sfxClick = slam.audio.newSource {"sfx/click-1.wav", "sfx/click-2.wav", "sfx/click-3.wav", "sfx/click-4.wav", "sfx/click-5.wav"}, "static"
+
 love.update = (dt) ->
   if settings.check_for_updates
     receive = love.thread.getChannel "receive"
@@ -565,6 +568,7 @@ love.mousepressed = (x, y, button) ->
 love.mousereleased = (x, y, button) ->
   pop.mousereleased x, y, button --NOTE click handled is not being returned!!
   pop.click(24)\move x + random(-8, 4), y + random(-20, -14)
+  sfxClick\play!
 
 love.wheelmoved = (x, y) ->
   pop.wheelmoved x, y
