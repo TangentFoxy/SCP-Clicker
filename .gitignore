@@ -4,4 +4,5 @@ build-includes/LICENSE.txt
 !builds/
 builds/*
 !builds/build.number
+!builds/custom_exe/
 tmp/

@@ -30,14 +30,14 @@ loveVersion="0.10.2"
 
 # Modified love executables (optional)
 # (The default values are where the default exe's will be extracted)
-win32exe="$win32Dir/love-$loveVersion-win32/love.exe"
+win32exe="$outputDir/custom_exe/SCP-Clicker.exe"
 
 # Mac icns files for package icon
 # (It's best to just specify the same file for both?
 # I don't think both are needed, but I am not very familiar with the Mac system.)
-osxIconsDirectory="$osx10Dir/love.app/Contents/Resources"
-osxFileIcon="GameIcon.icns"
-osxBundleIcon="OS X AppIcon.icns"
+osxIconsDirectory="$(pwd)/screenshots"
+osxFileIcon="icon.icns"
+osxBundleIcon="icon.icns"
 
 # Remove old packages?
 removeOld=true
