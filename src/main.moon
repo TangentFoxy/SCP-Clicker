@@ -380,9 +380,15 @@ love.load = ->
 
   visit_webpage = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/world.png"})\align "center", "center"
   visit_webpage\move icon_size / 2--, icon_size + margin
-  pop.text(visit_webpage, "Visit website.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  pop.text(visit_webpage, "Visit website.\n  (on Itch.io)", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
   visit_webpage.clicked = (x, y, button) =>
     love.system.openURL "https://guard13007.itch.io/scp-clicker"
+
+  patreon = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/patreon.png"})\align "center", "center"
+  patreon\move icon_size / 2, icon_size + margin
+  pop.text(patreon, "Support me on\n     Patreon", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  patreon.clicked = =>
+    love.system.openURL "https://patreon.com/guard13007"
 
   icons.add_icon({
     id: 0 -- the pause button being another icon was a bad design I think...
