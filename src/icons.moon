@@ -90,6 +90,8 @@ icons = {
     return wordwrap str, (text) -> return true if width < font\getWidth text
 
   scp_info: (element) ->
+    unless element.data.description   -- abort if no description (such as in my hacky use of basic_scp on 'get cash')
+      return
     state.paused = true
     overlay = pop.box({w: graphics.getWidth! * 9/10, h: graphics.getHeight! * 9/10})\setColor(255, 255, 255, 255)\align "center", "center"
     title = element.data.tooltip
@@ -173,6 +175,8 @@ icons = {
         data.cash_rate += element.data.cash_rate if element.data.cash_rate
         data.research_rate += element.data.research_rate if element.data.research_rate
         data.danger_rate += element.data.danger_rate if element.data.danger_rate
+      elseif button == pop.constants.right_mouse
+        icons.scp_info element
   multiple_scp: (element, build_only) ->
     count = 0
     for child in *icons.icon_grid.child
@@ -241,7 +245,7 @@ icons = {
     trigger: {scp_count: 2}
     icon: "icons/soap-experiment.png"
     tooltip: "Research contained SCPs.\n${cash} & ${research} per SCP, ${danger} per SCP (maximum +99% danger)"
-    cash: -800
+    cash: -80
     research: 1
     danger: 2
     apply: (element) ->
@@ -542,7 +546,8 @@ icons = {
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       element.update = =>
         unless data.expedition_running
-          icons.trigger_click 6
+          if data.cash >= math.abs icons[6].cash * 1.2
+            icons.trigger_click 6
       if data.automatic_expeditions
         element.data.update = true
         fg\setText "ACTIVE"
