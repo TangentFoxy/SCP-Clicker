@@ -140,8 +140,9 @@ icons = {
     tbl = {}
     for key, icon in ipairs icons
       if icon.trigger.scp
-        if icon.trigger.cleared_scp and data.cleared_scps[icon.trigger.cleared_scp]
-          tbl[key] = icon.trigger.scp
+        if icon.trigger.cleared_scp
+          if data.cleared_scps[icon.trigger.cleared_scp]
+            tbl[key] = icon.trigger.scp
         else
           tbl[key] = icon.trigger.scp
     scp = icons[weightedchoice tbl]
