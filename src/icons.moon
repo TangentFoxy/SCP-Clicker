@@ -132,7 +132,7 @@ icons = {
       return icons[37]
 
     -- then determine whether we return anything at all
-    unless flags == "debug"
+    unless flags.debug
       if math.random! > (#icons - #data.cleared_scps) / #icons
         return false
 
@@ -144,6 +144,10 @@ icons = {
         else
           tbl[key] = icon.trigger.scp
     scp = icons[weightedchoice tbl]
+
+    -- if we're asking for a specific ID, grab it instead
+    if flags.id
+      scp = icons[flags.id]
 
     if scp.trigger.multiple
       if data.scp_multiples[scp.id]
