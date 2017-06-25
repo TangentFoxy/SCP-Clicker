@@ -228,7 +228,7 @@ icons = {
         icons.trigger_click id, click, child
 
   { -- 1 ACTION get cash
-    trigger: {danger: 0.0215}
+    trigger: {danger: 0.031}
     icon: "icons/banknote.png"
     tooltip: "Get funds.\n${cash}, ${danger}"
     tip: "You should probably get some cash."
@@ -251,7 +251,7 @@ icons = {
           beholder.trigger "SCPS_RESEARCHED"
   }
   { -- 3 RESOURCE savings accounts
-    trigger: {cash: 800}
+    trigger: {cash: 5800} -- needs a better condition
     icon: "icons/piggy-bank.png"
     tooltip: "Open a savings account.\n${cash}, ${cash_rate}"
     cash: -1000
@@ -317,7 +317,7 @@ icons = {
           beholder.trigger "AGENT_LOST"
   }
   { -- 6 ACTION go on expedition
-    trigger: {cash: 6000}
+    trigger: {cash: 6200}
     icon: "icons/treasure-map.png"
     tooltip: "Send an expedition to find SCPs.\n${cash}, ${danger}, ${time}"
     tip: "Expeditions are dangerous. Make sure you have enough agents to handle it."
@@ -381,7 +381,7 @@ icons = {
         element\delete!
   }
   { -- 9 TOGGLE automatic agent re-hire
-    trigger: {agent_count: 30}
+    trigger: {agent_count: 12}
     icon: "icons/hammer-sickle.png"
     tooltip: "Hire replacement agents automatically.\n${cash_rate}"
     cash_rate: -4
@@ -422,7 +422,7 @@ icons = {
       fg\align!
   }
   { -- 10 RESOURCE open banks
-    trigger: {savings_accounts: 20}
+    trigger: {savings_accounts: 16}
     icon: "icons/bank.png"
     tooltip: "Open a bank.\n${cash}, ${cash_multiplier} (maximum +$500/s cash)"
     tip: "Banks require money in order to make money. Keep that in mind."
@@ -461,7 +461,7 @@ icons = {
             data.danger_rate += element.data.danger_rate
   }
   { -- 12 RESOURCE class-d personnel
-    trigger: {agent_count: 40}
+    trigger: {agent_count: 25}
     icon: "icons/convict.png"
     tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate} (${cash} to terminate)\n(at least 1 agent per 10 Class D personnel required)"
     cash: -0.15 -- note: this is used for terminating only
@@ -478,9 +478,13 @@ icons = {
           terminate!
       bg = pop.box(element)\align "left", "bottom"
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      bg2 = pop.box(element)\align "right", "top"
+      fg2 = pop.text(bg2, 20)\setColor 255, 255, 255, 255
       fg.update = =>
         fg\setText data.class_d_count
         bg\setSize fg\getSize!
+        fg2\setText "(#{data.class_d_count}/#{data.agent_count*10})"
+        bg2\setSize fg2\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs(element.data.cash_rate) and data.agent_count > data.class_d_count / 10
@@ -958,9 +962,13 @@ icons = {
     apply: (element) ->
       bg = pop.box(element)\align "left", "bottom"
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
+      bg2 = pop.box(element)\align "right", "top"
+      fg2 = pop.text(bg2, 20)\setColor 255, 255, 255, 255
       fg.update = =>
         fg\setText data.site_count
         bg\setSize fg\getSize!
+        fg2\setText "(#{data.scp_count}/#{data.site_count*5})"
+        bg2\setSize fg2\getSize!
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
           if data.cash >= math.abs element.data.cash
