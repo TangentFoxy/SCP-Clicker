@@ -442,10 +442,6 @@ love.load = ->
 
   sfxClick = slam.audio.newSource {"sfx/click-1.wav", "sfx/click-2.wav", "sfx/click-3.wav", "sfx/click-4.wav", "sfx/click-5.wav"}, "static"
   sfxNegativity = love.audio.newSource "sfx/negativity-v3.wav", "static"
-  --sfxNegativity\setLooping true
-  --sfxNegativity\play!
-  love.audio.play sfxNegativity
-  --sfxNegativity\setLooping false
 
 love.update = (dt) ->
   if settings.check_for_updates
@@ -548,21 +544,11 @@ love.update = (dt) ->
     if tip.data.text == "Be careful, if you go below -$100, the Foundation goes backrupt. Game over."
       tip\setText ""
 
-  if (not negativityTimer) and (data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) < 0)
-    --start = love.timer.getTime!
+  if (not negativityTimer) and ((data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) < -35) or (data.danger_rate + data.danger * data.danger_multiplier > 2) or (data.cash < 25))
     negativityTimer = timers.after 0.5, ->
       love.audio.play sfxNegativity
-      --print love.timer.getTime! - start
-  elseif negativityTimer and (data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) > 0)
+  elseif negativityTimer and ((data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) > -5) or (data.danger_rate + data.danger * data.danger_multiplier < 0) or (data.cash > 400))
     timers.remove negativityTimer
-
-  --unless sfxNegativity\isPlaying!
-  --  sfxNegativity\play!
-  --if data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) < 0 and not sfxNegativity\isPlaying!
-  --  print "not playing, should play now"
-  --  sfxNegativity\play!
-  --elseif data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) > 0 and sfxNegativity\isPlaying!
-  --  sfxNegativity\stop!
 
   if pop.hovered
     if pop.hovered.data.tooltip
