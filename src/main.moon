@@ -587,8 +587,8 @@ love.keypressed = (key) ->
     settings.debug = not settings.debug
   elseif key == "f" and settings.debug
     icons.add_icon icons.choose_scp debug: true
-  elseif key == "c" and settings.debug
-    icons.add_icon icons.choose_scp debug: true, id: 26
+  --elseif key == "c" and settings.debug
+  --  icons.add_icon icons.choose_scp debug: true, id: 26
 
 love.quit = ->
   if exit_action == "reset_data"

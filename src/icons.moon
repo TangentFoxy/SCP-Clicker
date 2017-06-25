@@ -4,6 +4,7 @@ import split_newline from require "util"
 
 pop = require "lib.pop"
 beholder = require "lib.beholder"
+slam = require "lib.slam"
 
 data = require "data"
 timers = require "timers"
@@ -126,7 +127,7 @@ icons = {
       display_text\setText newText
       display_text\move 4, 42
 
-  choose_scp: (flags) ->
+  choose_scp: (flags={}) ->
     -- warn if we lack containment capacity
     if data.scp_count == data.site_count * 5
       return icons[37]
@@ -322,6 +323,7 @@ icons = {
     cash: -5000
     danger: 10
     time: 20
+    sfx: slam.audio.newSource "sfx/expedition-complete.wav", "static"
     apply: (element) ->
       bg = pop.box(element)\align("left", "bottom")\setSize(element.data.w, 8 + 4)
       fg = pop.box(bg)\setColor 255, 255, 255, 255
@@ -338,6 +340,7 @@ icons = {
             data.expedition_running = false
             data.expedition_progress = 0
             icons.add_icon icons.choose_scp!
+            icons[6].sfx\play!
             return true
       if data.expedition_running
         fn!
