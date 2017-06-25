@@ -1,8 +1,8 @@
 local data
 
 data = {
-  cash: 5000
-  cash_rate: 10
+  cash: 4000
+  cash_rate: 8
   cash_multiplier: 0
 
   research: 5
@@ -10,7 +10,7 @@ data = {
   research_multiplier: 0
 
   danger: 0.02
-  danger_rate: 0.01
+  danger_rate: 0.012
   danger_multiplier: 1/8
 
   icons: {}

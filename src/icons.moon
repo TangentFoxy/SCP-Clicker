@@ -240,23 +240,30 @@ icons = {
   { -- 2 ACTION research SCPs
     trigger: {scp_count: 2}
     icon: "icons/soap-experiment.png"
-    tooltip: "Research contained SCPs.\n${research} per SCP, ${danger} per SCP (maximum +99% danger)"
+    tooltip: "Research contained SCPs.\n${cash} & ${research} per SCP, ${danger} per SCP (maximum +99% danger)"
+    cash: -800
     research: 1
     danger: 2
     apply: (element) ->
       element.clicked = (x, y, button) =>
         if button == pop.constants.left_mouse
-          data.research += element.data.research * data.scp_count
-          data.danger += math.min element.data.danger * data.scp_count, 99
-          beholder.trigger "SCPS_RESEARCHED"
+          if data.cash >= -1 * element.data.cash * data.scp_count
+            data.cash += element.data.cash * data.scp_count
+            data.research += element.data.research * data.scp_count
+            data.danger += math.min element.data.danger * data.scp_count, 99
+            beholder.trigger "SCPS_RESEARCHED"
   }
   { -- 3 RESOURCE savings accounts
-    trigger: {cash: 5800} -- needs a better condition
+    trigger: {cash: 5000}
     icon: "icons/piggy-bank.png"
     tooltip: "Open a savings account.\n${cash}, ${cash_rate}"
-    cash: -1000
+    cash: -600
     cash_rate: 1
     apply: (element) ->
+      update_cash = ->
+        icons[3].cash = -(600 + 50 * data.savings_accounts)
+        icons[3].cash_rate = 1 + data.savings_accounts / 2
+      update_cash!
       bg = pop.box(element)\align "left", "bottom"
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       fg.update = =>
@@ -272,6 +279,7 @@ icons = {
           data.cash -= element.data.cash * 0.9
           data.cash_rate -= element.data.cash_rate
           data.savings_accounts -= 1
+        update_cash!
   }
   { -- 4 ACTION expending class-d to enact emergency ritual with no other consequence
     trigger: {all: {danger: 10, class_d_count: 10}}
@@ -381,7 +389,7 @@ icons = {
         element\delete!
   }
   { -- 9 TOGGLE automatic agent re-hire
-    trigger: {agent_count: 12}
+    trigger: {agent_count: 20}
     icon: "icons/hammer-sickle.png"
     tooltip: "Hire replacement agents automatically.\n${cash_rate}"
     cash_rate: -4
@@ -422,13 +430,16 @@ icons = {
       fg\align!
   }
   { -- 10 RESOURCE open banks
-    trigger: {savings_accounts: 16}
+    trigger: {savings_accounts: 8}
     icon: "icons/bank.png"
     tooltip: "Open a bank.\n${cash}, ${cash_multiplier} (maximum +$500/s cash)"
     tip: "Banks require money in order to make money. Keep that in mind."
-    cash: -6000
+    cash: -4000
     cash_multiplier: 1/100
     apply: (element) ->
+      update_cash = ->
+        icons[10].cash = -(4000 + 800 * data.bank_count)
+      update_cash!
       bg = pop.box(element)\align "left", "bottom"
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       fg.update = =>
@@ -444,6 +455,7 @@ icons = {
           data.cash -= element.data.cash * 0.4
           data.cash_multiplier -= element.data.cash_multiplier
           data.bank_count -= 1
+        update_cash!
   }
   { -- 11 ACTION emergency ritual
     trigger: {danger_increasing: 2.25}
@@ -461,7 +473,7 @@ icons = {
             data.danger_rate += element.data.danger_rate
   }
   { -- 12 RESOURCE class-d personnel
-    trigger: {agent_count: 25}
+    trigger: {agent_count: 8}
     icon: "icons/convict.png"
     tooltip: "Class D personnel, cheaper than agents, more expendable.\n${cash_rate}, ${danger_rate} (${cash} to terminate)\n(at least 1 agent per 10 Class D personnel required)"
     cash: -0.15 -- note: this is used for terminating only
@@ -708,6 +720,8 @@ icons = {
     danger: 30
     cash: -10000
     apply: (element, build_only) ->
+      unless data.cleared_scps[26]   -- temporary check and self-destruction because of issue #73
+        return false
       unless build_only
         data.cash_rate += element.data.cash_rate
         data.danger_rate += element.data.danger_rate
@@ -728,7 +742,10 @@ icons = {
     research: 10
     danger: 2.5
     apply: (element, build_only) ->
-      element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n#{data.scp092_researched_count}/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
+      if data.scp092_researched_count == 3125
+        element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n3125/3125 disks researched"
+      else
+        element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n#{data.scp092_researched_count}/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
       update_cash = ->
         --icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.65 + 1.05 ^ (data.scp092_researched_count / 25) - 55)
         icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.75 + 1.1 ^ (data.scp092_researched_count / 25) - 55)
@@ -799,6 +816,8 @@ icons = {
     cash_rate: 5
     research: 1
     apply: (element, build_only) ->
+      unless data.cleared_scps[30]   -- temporary check and self-destruction because of issue #73
+        return false
       unless build_only
         icons[30].cash_rate -= element.data.cash_rate
         icons[30].description = descriptions[30][2]
@@ -960,6 +979,11 @@ icons = {
     cash: -2500
     cash_rate: -5
     apply: (element) ->
+      update_cash = ->
+        -- this one differs slightly, because we start with 1
+        icons[36].cash = -(2000 + 500 * data.site_count)
+        icons[36].cash_rate = -(5 * data.site_count)
+      update_cash!
       bg = pop.box(element)\align "left", "bottom"
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       bg2 = pop.box(element)\align "right", "top"
@@ -980,6 +1004,7 @@ icons = {
             data.cash -= element.data.cash / 2
             data.cash_rate -= element.data.cash_rate
             data.site_count -= 1
+        update_cash!
   }
   { -- 37 EVENT warning about lack of containment sites
     trigger: {multiple: true} -- no trigger on this one, choose_scp activates it
@@ -990,12 +1015,16 @@ icons = {
         element\delete!
   }
   { -- 38 RESOURCE (gold?) mines
-    trigger: {cash: 16000, cash_rate: 200}
+    trigger: {cash: 20000, cash_rate: 100}
     icon: "icons/gold-mine.png"
     tooltip: "Open a mine.\n${cash}, ${cash_rate}"
-    cash: -8500
-    cash_rate: 26
+    cash: -6000
+    cash_rate: 20
     apply: (element) ->
+      update_cash = ->
+        icons[38].cash = -(6000 + 200 * data.mine_count)
+        icons[38].cash_rate = 20 + 2 * data.mine_count
+      update_cash!
       bg = pop.box(element)\align "left", "bottom"
       fg = pop.text(bg, 20)\setColor 255, 255, 255, 255
       fg.update = =>
@@ -1011,6 +1040,7 @@ icons = {
           data.cash -= element.data.cash * 0.2
           data.cash_rate -= element.data.cash_rate * 1.05
           data.mine_count -= 1
+        update_cash!
   }
   { -- 39 SCP broken spybot
     trigger: {scp: 0.3}
