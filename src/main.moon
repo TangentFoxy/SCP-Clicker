@@ -592,8 +592,8 @@ love.keypressed = (key) ->
     love.event.quit!
   elseif key == "space"
     x, y = love.mouse.getPosition!
-    pop.mousepressed x, y, pop.constants.left_mouse
-    pop.mousereleased x, y, pop.constants.left_mouse
+    love.mousepressed x, y, pop.constants.left_mouse
+    love.mousereleased x, y, pop.constants.left_mouse
   elseif key == "d"
     settings.debug = not settings.debug
   elseif key == "f" and settings.debug
