@@ -134,7 +134,7 @@ icons = {
 
     -- then determine whether we return anything at all
     unless flags.debug
-      if math.random! > (#icons - #data.cleared_scps) / #icons
+      if math.random! > (#icons - #data.cleared_scps) / #icons / 1.2
         return false
 
     tbl = {}
@@ -515,7 +515,7 @@ icons = {
       icons.multiple_scp element, build_only
   }
   { -- 15 TOGGLE automatic expeditions
-    trigger: {all: {danger_decreasing: -3, scp_count: 3}}
+    trigger: {all: {danger_decreasing: -3, scp_count: 5}}
     icon: "icons/helicopter.png"
     tooltip: "Send out expeditions automatically.\n${cash_rate}, ${research_rate}"
     tip: "Be careful about being too aggressive with your expeditions."
