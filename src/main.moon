@@ -590,6 +590,10 @@ love.keypressed = (key) ->
   if key == "escape"
     exit_action = "save_data"
     love.event.quit!
+  elseif key == "space"
+    x, y = love.mouse.getPosition!
+    pop.mousepressed x, y, pop.constants.left_mouse
+    pop.mousereleased x, y, pop.constants.left_mouse
   elseif key == "d"
     settings.debug = not settings.debug
   elseif key == "f" and settings.debug
