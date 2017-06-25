@@ -330,7 +330,7 @@ icons = {
       fg\setSize data.expedition_progress, 8
       fg\move 2, 2
       fn = ->
-        timers.constant (dt) ->
+        timers.continuous (dt) ->
           goal = element.data.w - 4
           fg\setSize fg\getWidth! + goal/element.data.time * dt, 8
           data.expedition_progress = fg\getWidth!
