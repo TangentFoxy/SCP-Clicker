@@ -1059,6 +1059,14 @@ icons = {
     apply: (element, build_only) ->
       icons.basic_scp element
   }
+  { -- 41 SCP comedy mask
+    trigger: {scp: 0.03}
+    icon: "icons/duality-mask.png"
+    tooltip: "SCP-035 \"Possessive Mask\"\n${cash_rate} containment cost"
+    cash_rate: -20
+    apply: (element, build_only) ->
+      icons.basic_scp element
+  }
 
   --{ -- ?? TOGGLE play the stock market
   --  trigger: {cash: 1000000, cash_rate: 1500}
