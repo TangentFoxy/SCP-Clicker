@@ -3,7 +3,7 @@ data = require "data"
 
 { -- 13 SCP the plague doctor
   trigger: {scp: 0.10}
-  icon: "icons/bird-mask.png"
+  icon: "icons/plague-doctor-profile.png"
   tooltip: "SCP-049 \"The Plague Doctor\"\n${cash_rate} containment cost, ${research_rate} while contained"
   cash_rate: -2.5
   research_rate: 0.1
