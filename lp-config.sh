@@ -30,7 +30,8 @@ loveVersion="0.10.2"
 
 # Modified love executables (optional)
 # (The default values are where the default exe's will be extracted)
-win32exe="$outputDir/custom_exe/SCP-Clicker.exe"
+win32exe="$win32Dir/love-$loveVersion-win32/love.exe"
+#win32exe="$outputDir/custom_exe/SCP-Clicker.exe"
 
 # Mac icns files for package icon
 # (It's best to just specify the same file for both?
