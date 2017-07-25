@@ -31,6 +31,7 @@ rm ./tmp/src/lib/pop/LICENSE.txt
 rm ./tmp/src/lib/pop/README.md
 rm ./tmp/src/lib/pop/todo.txt
 rm -rf ./tmp/src/lib/pop/lib/inspect
+rm ./tmp/src/scps/*.moon
 ./lp-build.sh
 
 source ./lp-config.sh

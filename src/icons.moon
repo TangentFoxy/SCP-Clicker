@@ -11,7 +11,7 @@ timers = require "timers"
 descriptions = require "descriptions"
 state = require "state"
 
-local icons
+export icons -- should be temporary as part of refactoring, may end up permanent
 
 icons = {
   format_commas: (num) ->
@@ -364,15 +364,7 @@ icons = {
           data.danger += element.data.danger
           fn!
   }
-  { -- 7 SCP the broken desert
-    trigger: {scp: 0.01, multiple: true} -- 1% chance of being chosen
-    icon: "icons/cracked-glass.png"
-    tooltip: "SCP-132 \"The Broken Desert\"\n${cash_rate} containment cost per instance, ${research} per instance"
-    cash_rate: -0.2
-    research: 4
-    apply: (element, build_only) ->
-      icons.multiple_scp element, build_only
-  }
+  require "scps/132"
   { -- 8 EVENT agent deaths
     trigger: {random: 0.45/60, multiple: true} -- 45% chance per minute
     icon: "icons/morgue-feet.png"
@@ -511,29 +503,8 @@ icons = {
           if data.cash >= math.abs element.data.cash
             terminate!
   }
-  { -- 13 SCP the plague doctor
-    trigger: {scp: 0.10}
-    icon: "icons/bird-mask.png"
-    tooltip: "SCP-049 \"The Plague Doctor\"\n${cash_rate} containment cost, ${research_rate} while contained"
-    cash_rate: -2.5
-    research_rate: 0.1
-    apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research_rate += element.data.research_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 14 SCP MalO (never be alone)
-    trigger: {scp: 0.001, multiple: true}
-    icon: "icons/smartphone.png"
-    tooltip: "SCP-1471 (MalO ver1.0.0)\n${cash_rate} containment cost per instance, ${research} per instance"
-    cash_rate: -0.3
-    research: 6
-    apply: (element, build_only) ->
-      icons.multiple_scp element, build_only
-  }
+  require "scps/049"
+  require "scps/1471"
   { -- 15 TOGGLE automatic expeditions
     trigger: {all: {danger_decreasing: -3, scp_count: 5}}
     icon: "icons/helicopter.png"
@@ -574,146 +545,16 @@ icons = {
       bg\setSize fg\getSize!
       fg\align!
   }
-  { -- 16 SCP the syringe
-    trigger: {scp: 0.08}
-    icon: "icons/syringe-2.png"
-    tooltip: "SCP-991 \"The Syringe\"\nCan be used effectively in interrogations.\n${research}, ${danger}, ${cash_rate} per Class D"
-    research: -50
-    danger: 10
-    cash_rate: 0.08
-    danger_rate: 0.0001
-    apply: (element) ->
-      element.data.class_d_count = data.class_d_count
-      bg = pop.box(element)\align("left", "bottom")\setColor 255, 255, 255, 255
-      fg = pop.text(bg, 20)\setColor 0, 0, 0, 255
-      if data.syringe_usage
-        fg\setText "ACTIVE"
-      else
-        fg\setText "INACTIVE"
-      element.update = =>
-        if data.syringe_usage
-          difference = data.class_d_count - element.data.class_d_count
-          if difference != 0
-            data.cash_rate += element.data.cash_rate * data.class_d_count
-            data.danger_rate += element.data.danger_rate * data.class_d_count
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          if data.syringe_usage or data.research >= math.abs element.data.research
-            data.syringe_usage = not data.syringe_usage
-            if data.syringe_usage
-              data.research += element.data.research
-              data.danger += element.data.danger
-              data.cash_rate += element.data.cash_rate * data.class_d_count
-              data.danger_rate += element.data.danger_rate * data.class_d_count
-              fg\setText "ACTIVE"
-              element.data.class_d_count = data.class_d_count
-              element.data.update = true
-            else
-              data.cash_rate -= element.data.cash_rate * data.class_d_count
-              data.danger_rate -= element.data.danger_rate * data.class_d_count
-              fg\setText "INACTIVE"
-              element.data.update = false
-            bg\setSize fg\getSize!
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-      -- dunno why these are needed...
-      bg\setSize fg\getSize!
-      fg\align!
-  }
-  { -- 17 SCP failed werewolf
-    trigger: {scp: 0.12}
-    icon: "icons/werewolf.png"
-    tooltip: "SCP-1540 \"Failed Werewolf\"\n${cash_rate} containment cost, ${research_rate} while contained"
-    cash_rate: -3.2
-    research_rate: 0.32
-    apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research_rate += element.data.research_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 18 SCP RONALD REGAN CUT UP WHILE TALKING
-    trigger: {scp: 0.15}
-    icon: "icons/video-camera.png"
-    tooltip: "SCP-1981 \"RONALD REGAN CUT UP WHILE TALKING\"\n${cash_rate} research cost, ${research_rate}\n(click to research)"
-    cash_rate: -6.2
-    research_rate: 0.4
-    apply: (element, build_only) ->
-      icons.toggleable_scp element, "ronald_regan"
-  }
-  { -- 19 SCP self-defense sugar
-    trigger: {scp: 0.25}
-    icon: "icons/amphora.png"
-    tooltip: "SCP-989 \"Self-Defense Sugar\""
-    apply: (element, build_only) ->
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 20 SCP the director's cut
-    trigger: {scp: 0.25}
-    icon: "icons/salt-shaker.png"
-    tooltip: "SCP-981 \"The Director's Cut\""
-    apply: (element, build_only) ->
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 21 SCP desert in a can
-    trigger: {scp: 0.006, multiple: true}
-    icon: "icons/spray.png"
-    tooltip: "SCP-622 \"Desert in a Can\"\n${cash_rate} containment cost per instance"
-    cash_rate: -0.28
-    apply: (element, build_only) ->
-      icons.multiple_scp element, build_only
-  }
-  { -- 22 SCP book of endings
-    trigger: {scp: 0.20}
-    icon: "icons/death-note.png"
-    tooltip: "SCP-152 \"Book of Endings\"\n${cash_rate} research cost, ${research_rate}"
-    cash_rate: -7.5
-    research_rate: 5
-    apply: (element, build_only) ->
-      icons.toggleable_scp element, "book_of_endings"
-  }
-  { -- 23 SCP diet ghost
-    trigger: {scp: 0.002, multiple: true}
-    icon: "icons/soda-can.png"
-    tooltip: "SCP-2107 \"Diet Ghost\"\n${cash_rate} containment cost per instance"
-    cash_rate: -0.26
-    apply: (element, build_only) ->
-      icons.multiple_scp element, build_only
-  }
-  { -- 24 SCP book of dreams
-    trigger: {scp: 0.30}
-    icon: "icons/black-book.png"
-    tooltip: "SCP-1230 \"Book of Dreams\"\n${cash_rate} containment cost"
-    cash_rate: -0.02
-    apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 25 SCP the clockworks
-    trigger: {scp: 0.15}
-    icon: "icons/gear-hammer.png"
-    tooltip: "SCP-914 \"The Clockworks\"\n${cash_rate} containment cost, ${research_rate} while contained, ${danger_rate}"
-    cash_rate: -2
-    research_rate: 0.6
-    danger_rate: 0.02
-    apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research_rate += element.data.research_rate
-        data.danger_rate += element.data.danger_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
+  require "scps/991"
+  require "scps/1540"
+  require "scps/1981"
+  require "scps/989"
+  require "scps/981"
+  require "scps/622"
+  require "scps/152"
+  require "scps/2107"
+  require "scps/1230"
+  require "scps/914"
   { -- 26 EVENT clockwork-caused breach
     trigger: {random: 0.01/60, cleared_scp: 25, multiple: true} -- 1% per minute
     icon: "icons/clockwork.png"
@@ -739,81 +580,10 @@ icons = {
             data.danger_rate -= element.data.danger_rate
             element\delete!
   }
-  { -- 27 SCP best of the 5th dimension
-    trigger: {random: 0.01/60}   -- 1% per minute
-    icon: "icons/compact-disc.png"
-    tooltip: "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n0/3125 disks researched, ${cash} research cost, ${research}, ${danger}\n(click to research)"
-    cash: -15
-    research: 10
-    danger: 2.5
-    apply: (element, build_only) ->
-      if data.scp092_researched_count == 3125
-        element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n3125/3125 disks researched"
-      else
-        element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n#{data.scp092_researched_count}/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
-      update_cash = ->
-        --icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.65 + 1.05 ^ (data.scp092_researched_count / 25) - 55)
-        icons[27].cash = -(1.05 * (data.scp092_researched_count + 625) ^ 0.75 + 1.1 ^ (data.scp092_researched_count / 25) - 55)
-      update_cash!
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.left_mouse
-          if data.scp092_researched_count < 3124 and data.cash >= math.abs element.data.cash
-            data.cash += element.data.cash
-            data.research += element.data.research
-            data.danger += element.data.danger
-            data.scp092_researched_count += 1
-            update_cash!
-            if data.scp092_researched_count == 3125
-              element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n3125/3125 disks researched"
-            else
-              element.data.tooltip = "SCP-092 \"The Absolute Absolute Absolute Absolute BEST of The 5th Dimension!!!!!\"\n#{data.scp092_researched_count}/3125 disks researched, ${cash} research cost, ${research}\n(click to research)"
-        elseif button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 28 SCP deathly video tape
-    trigger: {scp: 0.4}
-    icon: "icons/audio-cassette.png"
-    tooltip: "SCP-583 \"Deathly Video Tape\"\n${cash_rate} containment cost, ${research}"
-    cash_rate: -0.15
-    research: 4
-    apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research += element.data.research
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 29 SCP many fingers, many toes
-    trigger: {scp: 0.38}
-    icon: "icons/fractal-hand.png"
-    tooltip: "SCP-584 \"Many Fingers, Many Toes\"\n${cash_rate} containment cost, ${research_rate} while contained"
-    cash_rate: -4.5
-    research_rate: 1.25
-    apply: (element, build_only) ->
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research_rate += element.data.research_rate
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
-  { -- 30 SCP pink flamingos
-    trigger: {scp: 0.4}
-    icon: "icons/flamingo.png"
-    tooltip: "SCP-1507 \"Pink Flamingos\"\n${cash_rate} containment cost, ${research}"
-    cash_rate: -3.2
-    research: 4.2
-    apply: (element, build_only) ->
-      if build_only and data.cleared_randoms[31]
-        element.data.cash_rate -= icons[31].cash_rate
-      unless build_only
-        data.cash_rate += element.data.cash_rate
-        data.research += element.data.research
-      element.clicked = (x, y, button) =>
-        if button == pop.constants.right_mouse
-          icons.scp_info element
-  }
+  require "scps/092"
+  require "scps/583"
+  require "scps/584"
+  require "scps/1507"
   { -- 31 EVENT pink flamingo breach
     trigger: {random: 0.04/60, cleared_scp: 30} -- 4% per minute
     icon: "icons/files.png"
@@ -1047,70 +817,14 @@ icons = {
           data.mine_count -= 1
         update_cash!
   }
-  { -- 39 SCP broken spybot
-    trigger: {scp: 0.3}
-    icon: "icons/metal-disc.png"
-    tooltip: "SCP-1599 \"Broken Spybot\"\n${cash_rate} research cost, ${research_rate}"
-    cash_rate: -8.4
-    research_rate: 5.2
-    apply: (element, build_only) ->
-      icons.toggleable_scp element, "broken_spybot"
-  }
-  { -- 40 SCP $҉ 585.98
-    trigger: {scp: 0.24}
-    icon: "icons/price-tag.png"
-    tooltip: "SCP-2395 \"$҉ 585.98\"\n${cash_rate} containment cost"
-    cash_rate: -3.15
-    apply: (element, build_only) ->
-      icons.basic_scp element
-  }
-  { -- 41 SCP comedy mask
-    trigger: {scp: 0.03}
-    icon: "icons/duality-mask.png"
-    tooltip: "SCP-035 \"Possessive Mask\"\n${cash_rate} containment cost"
-    cash_rate: -15
-    apply: (element, build_only) ->
-      icons.basic_scp element
-  }
-  { -- 42 SCP to end all wars
-    trigger: {scp: 0.01}
-    icon: "icons/gas-mask.png"
-    tooltip: "SCP-186 \"To End All Wars\"\n${cash_rate} containment cost"
-    cash_rate: -32
-    apply: (element, build_only) ->
-      icons.basic_scp element
-  }
-  { -- 43 SCP black shuck
-    trigger: {scp: 0.42}
-    icon: "icons/wolf-head.png"
-    tooltip: "SCP-023 \"Black Shuck\"\n${cash_rate} containment cost"
-    cash_rate: -8.5
-    apply: (element, build_only) ->
-      icons.basic_scp element
-  }
-  { -- 44 SCP the darkest heart
-    trigger: {scp: 0.02}
-    icon: "icons/tentacle-heart.png"
-    tooltip: "SCP-058 \"The Darkest Heart\"\n${cash_rate} containment cost"
-    cash_rate: -28
-    apply: (element, build_only) ->
-      icons.basic_scp element
-  }
-  { -- 45 SCP eye pods
-    trigger: {scp: 0.6}
-    icon: "icons/brass-eye.png"
-    tooltip: "SCP-131 \"The 'Eye Pods'\"\nno containment cost"
-    apply: (element, build_only) ->
-      icons.basic_scp element
-  }
-  { -- 46 malfunctioning destroyer (Jupiter)
-    trigger: {random: 0.05/60} -- 5% chance per minute
-    icon: "icons/jupiter.png"
-    tooltip: "SCP-2399 \"A Malfunctioning Destroyer\"\n${cash_rate} containment cost"
-    cash_rate: -60
-    apply: (element, build_only) ->
-      icons.basic_scp element
-  }
+  require "scps/1599"
+  require "scps/2395"
+  require "scps/035"
+  require "scps/186"
+  require "scps/023"
+  require "scps/058"
+  require "scps/131"
+  require "scps/2399"
 
   --{ -- ?? TOGGLE play the stock market
   --  trigger: {cash: 1000000, cash_rate: 1500}
