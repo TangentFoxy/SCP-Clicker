@@ -11,7 +11,7 @@ timers = require "timers"
 descriptions = require "descriptions"
 state = require "state"
 
-export icons -- should be temporary as part of refactoring, may end up permanent
+export icons -- NOTE should be temporary as part of refactoring, may end up permanent
 
 icons = {
   format_commas: (num) ->
