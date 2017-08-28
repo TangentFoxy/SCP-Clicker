@@ -1,10 +1,13 @@
 pop = require "lib.pop"
 settings = require "settings"
 
+import graphics from love
+
 game = {}
 
 game.init = =>
   pop.load "gui"
+  -- pop.tabs alignHorizontal: 1/3, h: graphics.getHeight!
 
 game.update = (dt) =>
   pop.update dt
