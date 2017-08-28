@@ -1,0 +1,433 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Pop.Box()</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Issues">Issues</a></li>
+<li><a href="#Methods">Methods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><strong>element</strong></li>
+  <li><a href="../classes/window.html">window</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/pop.html">pop</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/util.html">util</a></li>
+  <li><a href="../modules/Element.html">Element</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>element</code></h1>
+<p>A generic element every element must inherit from.</p>
+<p>
+
+</p>
+    <h3>Info:</h3>
+    <ul>
+        <li><strong>Copyright</strong>: Paul Liverman III (2016)</li>
+        <li><strong>License</strong>: The MIT License (MIT)</li>
+    </ul>
+
+
+<h2><a href="#Issues">Issues</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#element.new-todo7">element.new-todo7</a></td>
+	<td class="summary">doc me</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.new-todo7-todo8">element.new-todo7-todo8</a></td>
+	<td class="summary">document this</td>
+	</tr>
+</table>
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#element.new">element.new (parent, data)</a></td>
+	<td class="summary">Constructor expects nothing, or a data table describing it.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.setSize">element.setSize (w, h)</a></td>
+	<td class="summary">Sets an element's width/height.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.getSize">element.getSize (self)</a></td>
+	<td class="summary">Returns an element's width and height.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.setWidth">element.setWidth (w)</a></td>
+	<td class="summary">Sets an element's width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.getWidth">element.getWidth (self)</a></td>
+	<td class="summary">Returns an element's width.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.setHeight">element.setHeight (h)</a></td>
+	<td class="summary">Sets an element's height.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.getHeight">element.getHeight (self)</a></td>
+	<td class="summary">Returns an element's height.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.move">element.move (self, x, y)</a></td>
+	<td class="summary">Moves an element by specified x/y.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#element.delete">element.delete (self)</a></td>
+	<td class="summary">Deletes references to this element and then deletes it.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Issues"></a>Issues</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "element.new-todo7"></a>
+    <strong>element.new-todo7</strong>
+    </dt>
+    <dd>
+    doc me
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.new-todo7-todo8"></a>
+    <strong>element.new-todo7-todo8</strong>
+    </dt>
+    <dd>
+    document this
+
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "element.new"></a>
+    <strong>element.new (parent, data)</strong>
+    </dt>
+    <dd>
+    Constructor expects nothing, or a data table describing it.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">parent</span>
+            <span class="types"><span class="type">Element</span> or <span class="type">false</span></span>
+         The parent element.
+        </li>
+        <li><span class="parameter">data</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        [opt] The data (state) for this element.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/element.html#">element</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.setSize"></a>
+    <strong>element.setSize (w, h)</strong>
+    </dt>
+    <dd>
+    Sets an element's width/height.  Fixes alignment if needed.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">w</span>
+            <span class="types"><span class="type">integer</span></span>
+        [opt] Width.
+        </li>
+        <li><span class="parameter">h</span>
+            <span class="types"><span class="type">integer</span></span>
+        [opt] Height.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/element.html#">element</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.getSize"></a>
+    <strong>element.getSize (self)</strong>
+    </dt>
+    <dd>
+    Returns an element's width and height.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">integer</span></span>
+        Width.</li>
+        <li>
+           <span class="types"><span class="type">integer</span></span>
+        Height.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.setWidth"></a>
+    <strong>element.setWidth (w)</strong>
+    </dt>
+    <dd>
+    Sets an element's width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">w</span>
+            <span class="types"><span class="type">integer</span></span>
+         Width.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/element.html#">element</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.getWidth"></a>
+    <strong>element.getWidth (self)</strong>
+    </dt>
+    <dd>
+    Returns an element's width.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">integer</span></span>
+        Width.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.setHeight"></a>
+    <strong>element.setHeight (h)</strong>
+    </dt>
+    <dd>
+    Sets an element's height.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">h</span>
+            <span class="types"><span class="type">integer</span></span>
+         Height.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/element.html#">element</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.getHeight"></a>
+    <strong>element.getHeight (self)</strong>
+    </dt>
+    <dd>
+    Returns an element's height.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">integer</span></span>
+        Height.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.move"></a>
+    <strong>element.move (self, x, y)</strong>
+    </dt>
+    <dd>
+    Moves an element by specified x/y.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+
+
+        </li>
+        <li><span class="parameter">x</span>
+
+
+
+        </li>
+        <li><span class="parameter">y</span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="../classes/element.html#">element</a></span>
+        self
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "element.delete"></a>
+    <strong>element.delete (self)</strong>
+    </dt>
+    <dd>
+    Deletes references to this element and then deletes it.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2017-04-13 08:11:30 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
