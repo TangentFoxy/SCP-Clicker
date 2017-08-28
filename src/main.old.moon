@@ -1,0 +1,619 @@
+require "version"
+v = require "lib.semver"
+version = v version
+
+math.randomseed(os.time())
+
+import graphics, mouse from love
+import round, random, serialize, deserialize, shuffle from require "lib.lume"
+
+pop = require "lib.pop"
+beholder = require "lib.beholder"
+slam = require "lib.slam"
+
+icons = require "icons"
+data = require "data"
+settings = require "settings"
+timers = require "timers"
+state = require "state"
+descriptions = require "descriptions"
+
+icon_size = 128
+margin = 8
+
+local tooltip_box, tooltip_text, tip, paused_overlay, exit_action, version_display, autosave_timer, sfxClick, sfxNegativity, negativityTimer
+
+deepcopy = (orig) ->
+  orig_type = type(orig)
+  local copy
+  if orig_type == 'table'
+    copy = {}
+    for orig_key, orig_value in next, orig, nil
+      copy[deepcopy(orig_key)] = deepcopy(orig_value)
+    setmetatable(copy, deepcopy(getmetatable(orig)))
+  else -- number, string, boolean, etc
+    copy = orig
+  return copy
+
+icons.add_icon = (icon, build_only) ->
+  unless icon return false -- now possible to call it with nothing, choose_scp can return nothing sometimes
+  x = #icons.icon_grid.data.child % icons.icon_grid.data.grid_width
+  y = math.floor #icons.icon_grid.data.child / icons.icon_grid.data.grid_width
+  if icon.trigger.multiple
+    icon = deepcopy icon
+  icon.w = icon_size
+  icon.h = icon_size
+  element = pop.icon(icons.icon_grid, icon)\move(x * (icon_size + margin) + margin, y * (icon_size + margin) + margin)
+  if false != icon.apply(element, build_only)
+    icon.activated = true -- make sure icons are only added once when triggered
+    element.wheelmoved = (x, y) =>
+      icons.icon_grid\wheelmoved x, y
+    for child in *element.child
+      child.data.hoverable = false
+    --_, y = element\getPosition!
+    --if y > icons.icon_grid.data.h - margin*2
+    --  element\setPosition -512, -512 -- hide it, it doesn't fit!
+    icons.icon_grid\wheelmoved 0, 0
+    unless build_only
+      if icon.id != 0 -- don't save the pause button!
+        table.insert data.icons, icon.id
+    if icon.tip
+      if icon.tipOnce
+        tip\setText icon.tip
+        tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+        icon.tipOnce = false
+      elseif icon.tipOnce == nil
+        tip\setText icon.tip
+        tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+    return true -- an icon was set
+  else
+    if element
+      element\delete!
+    return false -- an icon was not set
+
+icons.fix_order = ->
+  icons.icon_grid\wheelmoved 0, 0
+
+  data.icons = {}
+  for icon in *icons.icon_grid.child
+    unless icon.data.id == 0 -- don't save UI elements
+      table.insert data.icons, icon.data.id
+
+save = ->
+  love.filesystem.write "save.txt", serialize data
+
+load = ->
+  if loaded_text = love.filesystem.read "settings.txt"
+    loaded_settings = deserialize loaded_text
+    for key, value in pairs loaded_settings
+      settings[key] = value
+
+  if loaded_text = love.filesystem.read "save.txt"
+    loaded_data = deserialize loaded_text
+    for key, value in pairs loaded_data
+      unless key == "version"
+        data[key] = value
+
+    -- if old version of save data loaded, fix it
+    unless loaded_data.version
+      for id in *data.cleared_scps
+        icons.add_icon(icons[id], true)
+        table.insert, data.icons, id
+      loaded_data.version = 1
+    if loaded_data.version == 1
+      data.scp_count = #data.cleared_scps -- reset to approximately correct count
+      tmp = {}
+      for id in *data.cleared_scps
+        tmp[id] = true
+      data.cleared_scps = tmp
+      tmp = {}
+      for id in *data.cleared_randoms
+        tmp[id] = true
+      data.cleared_randoms = tmp
+      loaded_data.version = 2
+    if loaded_data.version == 2
+      settings.check_for_updates = loaded_data.check_for_updates
+      loaded_data.check_for_updates = nil   -- error, fixed in below version
+      loaded_data.version = 3
+    if loaded_data.version == 3
+      for id in pairs data.cleared_scps
+        if icons[id].trigger.multiple
+          data.scp_multiples[id] = 2   -- just assume we have two instances
+      data.check_for_updates = nil
+      loaded_data.version = 4
+    if loaded_data.version == 4
+      data.site_count = math.floor loaded_data.scp_count / 5 + 2
+      loaded_data.version = 5
+
+    -- apply loaded data
+    for id in pairs data.cleared_scps
+      unless icons[id].trigger.multiple
+        icons[id].trigger.scp = nil
+    for id in pairs data.cleared_randoms
+      unless icons[id].trigger.multiple
+        icons[id].trigger.random = nil
+        icons[id].trigger.scps_researched = nil
+    for id, description in pairs descriptions
+      if data.scp_descriptions[id]
+        icons[id].description = description[data.scp_descriptions[id]]
+    for id in *data.icons
+      icons.add_icon(icons[id], true)
+
+game_over = (reason) ->
+  state.paused = true
+  overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
+  pop.text(overlay, "Game Over", 60)\align("center", "top")\move nil, 20
+  pop.text(overlay, reason, 24)\align "center", "center"
+  pop.text(overlay, "Click to restart.", 20)\align("center", "bottom")\move nil, -16
+  wait = love.timer.getTime!
+  overlay.clicked = (x, y, button) =>
+    if love.timer.getTime! - wait >= 1
+      exit_action = "reset_data"
+      love.event.quit "restart"
+
+love.load = ->
+  pop.load "gui"
+
+  grid_width = math.floor graphics.getWidth! / (icon_size + margin)
+  if graphics.getWidth! % (icon_size + margin) < 8
+    grid_width -= 1
+
+  grid_height = math.floor graphics.getHeight! / (icon_size + margin)
+  if graphics.getHeight! % (icon_size + margin) < 8
+    grid_height -= 1
+
+  icons.icon_grid = pop.box({
+    w: grid_width * (icon_size + margin) + margin
+    h: grid_height * (icon_size + margin) + margin
+    :grid_width, :grid_height
+  })\setColor(255, 255, 255, 255)\align "center"
+  icons.icon_grid.data.currentLine = 0
+  icons.icon_grid.wheelmoved = (x, y) =>
+    lineWidth = math.floor icons.icon_grid.data.w / (icon_size + margin)
+    lines = 1 + math.floor #icons.icon_grid.child / ( lineWidth )
+    @data.currentLine -= math.floor y
+    if @data.currentLine < 0 or lines < 4
+      @data.currentLine = 0
+    elseif @data.currentLine > lines - 3
+      @data.currentLine = lines - 3
+    x, y = margin, margin
+    for icon in *@child
+      icon\setPosition -512, -512 -- safely off-screen
+    for i = 1 + @data.currentLine * lineWidth, (@data.currentLine + 3) * lineWidth
+      if icon = @child[i]
+        if y > icons.icon_grid.data.h - margin
+          icon\setPosition -512, -512 -- safely off-screen
+        else
+          icon\setPosition x, y
+        x += margin + icon_size
+        if x > icons.icon_grid.data.w - margin - icon_size
+          x = margin
+          y += margin + icon_size
+
+  cash_display = pop.text({fontSize: 20, update: true})\align "left", "bottom"
+  research_display = pop.text({fontSize: 20, update: true})\align "right", "bottom"
+  danger_display = pop.text({fontSize: 20, update: true})\align "center", "bottom"
+
+  cash_rate_display = pop.text({fontSize: 20, update: true})\align "left", "bottom"
+  research_rate_display = pop.text({fontSize: 20, update: true})\align "right", "bottom"
+  danger_rate_display = pop.text({fontSize: 20, update: true})\align "center", "bottom"
+
+  format_commas = (num) ->
+    result = num
+    while true
+      result, k = string.gsub(result, "^(-?%d+)(%d%d%d)", "%1,%2")
+      break if k==0
+    return result
+
+  cash_display.update = =>
+    if data.cash >= 100000000000000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000000000000, .01}Q"
+    elseif data.cash >= 100000000000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000000000, .01}q"
+    elseif data.cash >= 100000000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000000, .01}t"
+    elseif data.cash >= 100000000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000000, .01}b"
+    elseif data.cash >= 100000000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000000, .01}m"
+    elseif data.cash >= 100000
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash/1000, .01}k"
+    else
+      cash_display\setText "Cash: $#{format_commas string.format "%.2f", round data.cash, .01}"
+    cash_display\move margin, -margin --temporary manual margin
+
+  research_display.update = =>
+    if data.research >= 100000000000000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000000000000, .01}Q"
+    elseif data.research >= 100000000000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000000000, .01}q"
+    elseif data.research >= 100000000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000000, .01}t"
+    elseif data.research >= 100000000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000000, .01}b"
+    elseif data.research >= 100000000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000000, .01}m"
+    elseif data.research >= 100000
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research/1000, .01}k"
+    else
+      research_display\setText "Research: #{format_commas string.format "%.2f", round data.research, .01}"
+    research_display\move -margin, -margin --temporary manual margin
+
+  danger_display.update = =>
+    danger_display\setText "Danger: #{format_commas string.format "%.2f", round data.danger, .01}%"
+    danger_display\move nil, -margin -- temporary manual margin
+
+  cash_rate_display.update = =>
+    value = data.cash_rate + math.min math.abs(data.cash) * data.cash_multiplier, 500
+    if value < 0
+      cash_rate_display\setText "-$#{format_commas string.format "%.2f", round math.abs(value), .01}/s"
+    else
+      cash_rate_display\setText "+$#{format_commas string.format "%.2f", round value, .01}/s"
+    cash_rate_display\move margin, -margin*3 - cash_rate_display\getHeight! --temporary manual margin
+
+  research_rate_display.update = =>
+    value =  data.research_rate + data.research * data.research_multiplier
+    if value < 0
+      research_rate_display\setText "#{format_commas string.format "%.2f", round value, .01}/s"
+    else
+      research_rate_display\setText "+#{format_commas string.format "%.2f", round value, .01}/s"
+    research_rate_display\move -margin, -margin*3 - cash_rate_display\getHeight! --temporary manual margin
+
+  danger_rate_display.update = =>
+    value = data.danger_rate + data.danger * data.danger_multiplier
+    if value < 0
+      danger_rate_display\setText "#{format_commas string.format "%.2f", round value, .01}%/s"
+    else
+      danger_rate_display\setText "+#{format_commas string.format "%.2f", round value, .01}%/s"
+    danger_rate_display\move nil, -margin*3 - cash_rate_display\getHeight! -- temporary manual margin
+
+  tip = pop.text({fontSize: 20})\align "left", "bottom"
+
+  timers.every 1, ->
+    for icon in *icons
+      if icon.trigger.random
+        if random! <= icon.trigger.random
+          if icons.add_icon icon
+            unless icon.trigger.multiple
+              icon.trigger.random = nil
+            data.cleared_randoms[icon.id] = true
+          break
+
+  if settings.autosave
+    autosave_timer = timers.every 60, ->
+      save!
+
+  tooltip_box = pop.box()
+  tooltip_text = pop.text(tooltip_box, 20)
+  tooltip_box.mousemoved = (x, y, dx, dy) =>
+    @move dx, dy
+
+  paused_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!, draw: false})
+
+  resume = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/play-button.png", tooltip: ""})\align nil, "center"
+  resume\move margin, -icon_size - margin
+  pop.text(resume, "Resume game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  resume.clicked = (x, y, button) =>
+    paused_overlay.data.draw = false
+    state.paused = false
+
+  options_button = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/cog.png", tooltip: ""})\align "center", "center"
+  options_button\move icon_size / 2, -icon_size - margin
+  pop.text(options_button, "Options / Data", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  options_button.clicked = (x, y, button) =>
+    options_overlay = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
+
+    back_button = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/anticlockwise-rotation.png", tooltip: ""})\align nil, "center"
+    back_button\move margin, -icon_size - margin
+    pop.text(back_button, "Back to pause menu.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    back_button.clicked = (x, y, button) =>
+      options_overlay\delete!
+
+    open_save_location = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/open-folder.png", tooltip: ""})\align nil, "center"
+    open_save_location\move margin
+    pop.text(open_save_location, "Open saved data location.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    open_save_location.clicked = (x, y, button) =>
+      love.system.openURL "file://" .. love.filesystem.getSaveDirectory!
+
+    debug_button = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/rune-sword.png", tooltip: ""})\align "center", "center"
+    debug_button\move icon_size / 2, -icon_size - margin
+    pop.text(debug_button, "Debug tools (cheats).", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    debug_button.clicked = (x, y, button) =>
+      data.cash += 50000
+      data.research += 10
+      data.danger -= data.danger * 0.99
+      data.dirty_cheater = true -- lolololol
+      paused_overlay.data.draw = false
+      state.paused = false
+      options_overlay\delete!
+
+    reset = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/save.png", tooltip: ""})\align "center", "center"
+    reset\move icon_size / 2
+    pop.text(reset, "Reset game data.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    reset.clicked = (x, y, button) =>
+      exit_action = "reset_data"
+      love.event.quit "restart"
+
+    toggle_version_check = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/aerial-signal.png", tooltip: ""})\align nil, "center"
+    toggle_version_check\move margin, icon_size + margin
+    local version_check_text
+    if settings.check_for_updates
+      version_check_text = pop.text(toggle_version_check, "Disable version checking.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    else
+      version_check_text = pop.text(toggle_version_check, "Enable version checking.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    toggle_version_check.clicked = (x, y, button) =>
+      settings.check_for_updates = not settings.check_for_updates
+      send = love.thread.getChannel "send"
+      if settings.check_for_updates
+        send\push "start"
+        version_check_text\setText("Disable version checking.")\move icon_size + margin
+      else
+        send\push "stop"
+        version_check_text\setText("Enable version checking.")\move icon_size + margin
+
+    toggle_autosave = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/aerial-signal.png", tooltip: ""})\align "center", "center"
+    toggle_autosave\move icon_size / 2, icon_size + margin
+    local autosave_text
+    if settings.autosave
+      autosave_text = pop.text(toggle_autosave, "Disable autosave.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    else
+      autosave_text = pop.text(toggle_autosave, "Enable autosave.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+    toggle_autosave.clicked = (x, y, button) =>
+      settings.autosave = not settings.autosave
+      send = love.thread.getChannel "send"
+      if settings.autosave
+        autosave_timer = timers.every 60, ->
+          save!
+        autosave_text\setText("Disable autosave.")\move icon_size + margin
+      else
+        if autosave_timer
+          timers.remove autosave_timer
+          autosave_timer = nil
+        autosave_text\setText("Enable autosave.")\move icon_size + margin
+
+  exit = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/power-button.png", tooltip: ""})\align nil, "center"
+  exit\move margin--, icon_size + margin
+  pop.text(exit, "Save and exit game.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  exit.clicked = (x, y, button) =>
+    exit_action = "save_data"
+    love.event.quit!
+
+  visit_webpage = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/world.png"})\align "center", "center"
+  visit_webpage\move icon_size / 2--, icon_size + margin
+  pop.text(visit_webpage, "Visit website.\n  (on Itch.io)", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  visit_webpage.clicked = (x, y, button) =>
+    love.system.openURL "https://guard13007.itch.io/scp-clicker"
+
+  patreon = pop.icon(paused_overlay, {w: icon_size, h: icon_size, icon: "icons/patreon.png"})\align "center", "center"
+  patreon\move icon_size / 2, icon_size + margin
+  pop.text(patreon, "Support me on\n     Patreon", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
+  patreon.clicked = =>
+    love.system.openURL "https://patreon.com/guard13007"
+
+  icons.add_icon({
+    id: 0 -- the pause button being another icon was a bad design I think...
+    trigger: {}
+    icon: "icons/pause-button.png"
+    tooltip: "Pause the game."
+    apply: (element) ->
+      element.clicked = (x, y, button) =>
+        if button == pop.constants.left_mouse
+          paused_overlay.data.draw = true
+          state.paused = true
+          pop.focused = false
+  })
+
+  load!
+
+  title_screen = pop.box({w: graphics.getWidth!, h: graphics.getHeight!})
+  title_screen.clicked = (x, y, button) =>
+    state.paused = false
+    title_screen\delete!
+  pop.text(title_screen, "SCP Clicker", 60)\align("center", "top")\move nil, "20"
+  pop.text(title_screen, "Secure, -Click-, Protect", 26)\align("center", "top")\move nil, 90
+  pop.text(title_screen, "Click anywhere to begin.", 26)\align("center", "bottom")\move nil, -20
+  if settings.check_for_updates
+    version_display = pop.text(title_screen, "Current version: #{version} Latest version: Checking for latest version...", 16)\align("left", "bottom")\move 2
+    thread = love.thread.newThread "version-check.lua"
+    send = love.thread.getChannel "send"
+    receive = love.thread.getChannel "receive"
+    thread\start!
+    send\push version
+  else
+    version_display = pop.text(title_screen, "Current version: #{version}", 16)\align("left", "bottom")\move 2
+  align_grid = pop.box(title_screen, {w: icon_size*4+margin*5, h: icon_size*2+margin*3})\align("center", "center")\move nil, 40
+  icon_list = shuffle love.filesystem.getDirectoryItems "icons"
+  for x=1,4
+    for y=1,2
+      name = table.remove icon_list, 1
+      pop.icon(align_grid, {w: icon_size, h: icon_size, icon: "icons/#{name}", tooltip: ""})\move (x-1)*icon_size + x*margin, (y-1)*icon_size + y*margin
+
+  beholder.observe "SCPS_RESEARCHED", ->
+    for icon in *icons
+      unless icon.activated
+        if icon.trigger.scps_researched
+          -- figure out whether or not to active based on randomness
+          if random! <= icon.trigger.scps_researched.random
+            if icons.add_icon icon
+              unless icon.trigger.multiple
+                icon.trigger.scps_researched = nil
+              data.cleared_randoms[icon.id] = true
+            break
+
+  sfxClick = slam.audio.newSource {"sfx/click-1.wav", "sfx/click-2.wav", "sfx/click-3.wav", "sfx/click-4.wav", "sfx/click-5.wav"}, "static"
+  sfxNegativity = love.audio.newSource "sfx/negativity-v3.wav", "static"
+
+love.update = (dt) ->
+  if settings.check_for_updates
+    receive = love.thread.getChannel "receive"
+    if receive\getCount! > 0
+      latest_version = receive\demand!
+      if version_display and version_display.parent
+        local display_string
+        if latest_version != "error"
+          latest_version = v latest_version
+          if version == latest_version and version.build and latest_version.build and version.build == latest_version.build
+            display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
+          elseif version > latest_version or version.build and latest_version.build and version.build > latest_version.build
+            display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
+          else
+            display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
+        else
+          display_string = "Current version: #{version} Latest version: Connection error while getting latest version. Trying again..."
+        version_display\setText(display_string)\move 2
+      else
+        if latest_version != "error"
+          latest_version = v latest_version
+          if version < latest_version
+            icons.add_icon({
+              id: 0 -- any UI element is "ID" zero
+              trigger: {}
+              icon: "icons/world.png"
+              tooltip: "There is a new version of SCP Clicker available: #{latest_version}\nClick to save, quit, and go to Itch.io.\nRight-click to dismiss."
+              apply: (element) ->
+                element.clicked = (x, y, button) =>
+                  if button == pop.constants.left_mouse
+                    love.system.openURL "https://guard13007.itch.io/scp-clicker"
+                    exit_action = "save_data"
+                    love.event.quit!
+                  elseif button == pop.constants.right_mouse
+                    @delete!
+            })
+
+  if state.paused
+    -- find and delete click elements!
+    for i=#pop.screen.child, 1, -1
+      if pop.screen.child[i].data.type == "click"
+        pop.screen.child[i]\delete!
+
+    return
+
+  pop.update dt
+
+  data.cash += data.cash_rate * dt
+  data.research += data.research_rate * dt
+  data.danger += data.danger_rate * dt
+
+  data.cash += math.min math.abs(data.cash) * data.cash_multiplier * dt, 500 * dt
+  data.research += data.research * data.research_multiplier * dt
+  data.danger += data.danger * data.danger_multiplier * dt
+
+  if data.danger < 0
+    data.danger = 0
+
+  if data.danger > 100
+    game_over "Danger reached 100%, the world is over."
+
+  if data.cash < -100
+    game_over "The Foundation has gone backrupt.\nNow who will protect the world? :("
+
+  for icon in *icons
+    unless icon.activated
+      if icon.trigger.scps_researched   -- these are handled by an observer defined in love.load
+        continue
+      if icon.trigger.danger_increasing and icon.trigger.danger_increasing <= data.danger_rate + data.danger * data.danger_multiplier
+        icons.add_icon icon
+      elseif icon.trigger.all
+        -- if less than current, do not trigger
+        if icon.trigger.danger_decreasing and icon.trigger.danger_decreasing < data.danger_rate + data.danger * data.danger_multiplier
+          continue
+        active = true
+        for key, value in pairs data
+          if icon.trigger.all[key] and value < icon.trigger.all[key]
+            active = false
+            break
+        if active
+          icons.add_icon icon
+      else
+        for key, value in pairs data
+          if icon.trigger[key] and value >= icon.trigger[key]
+            icons.add_icon icon
+            break
+
+  job = 1
+  while job <= #timers
+    if timers[job]\update dt
+      table.remove timers, job
+    else
+      job += 1
+
+  if data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) < -20 or data.cash < 60
+    tip\setText "Be careful, if you go below -$100, the Foundation goes backrupt. Game over."
+    tip\move margin, -margin*5 - tip\getHeight!*2 -- manual margin
+  elseif data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) > 5 or data.cash > 1200
+    if tip.data.text == "Be careful, if you go below -$100, the Foundation goes backrupt. Game over."
+      tip\setText ""
+
+  if (not negativityTimer) and ((data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) < -35) or (data.danger_rate + data.danger * data.danger_multiplier > 2) or (data.cash < 25))
+    negativityTimer = timers.after 0.5, ->
+      love.audio.play sfxNegativity
+  elseif negativityTimer and ((data.cash_rate + math.min(math.abs(data.cash) * data.cash_multiplier, 500) > -5) or (data.danger_rate + data.danger * data.danger_multiplier < 0) or (data.cash > 400))
+    timers.remove negativityTimer
+
+  if pop.hovered
+    if pop.hovered.data.tooltip
+      tooltip_text\setText icons.replace pop.hovered.data
+      w, h = tooltip_text\getSize!
+      tooltip_box\setSize w + margin*2, h + margin*2
+      x, y = mouse.getPosition!
+      tooltip_box\move x + margin, y + margin
+      if tooltip_box.data.x + tooltip_box.data.w > graphics.getWidth!
+        tooltip_box\move -(tooltip_box.data.x + tooltip_box.data.w - graphics.getWidth!)
+      if tooltip_box.data.y + tooltip_box.data.h > graphics.getHeight!
+        tooltip_box\move nil, -(tooltip_box.data.y + tooltip_box.data.h - graphics.getHeight!)
+      tooltip_text\align!
+      tooltip_text\move margin, margin
+    else
+      tooltip_text\setText ""
+      tooltip_box\setSize 0, 0
+    pop.focused = tooltip_box
+
+love.draw = ->
+  pop.draw!
+  pop.debugDraw! if settings.debug
+
+love.mousemoved = (x, y, dx, dy) ->
+  pop.mousemoved x, y, dx, dy
+
+love.mousepressed = (x, y, button) ->
+  pop.mousepressed x, y, button
+
+love.mousereleased = (x, y, button) ->
+  pop.mousereleased x, y, button --NOTE click handled is not being returned!!
+  pop.click(24)\move x + random(-8, 4), y + random(-20, -14)
+  sfxClick\play!
+
+love.wheelmoved = (x, y) ->
+  pop.wheelmoved x, y
+
+love.keypressed = (key) ->
+  if key == "escape"
+    exit_action = "save_data"
+    love.event.quit!
+  elseif key == "space"
+    x, y = love.mouse.getPosition!
+    love.mousepressed x, y, pop.constants.left_mouse
+    love.mousereleased x, y, pop.constants.left_mouse
+  elseif key == "d"
+    settings.debug = not settings.debug
+  elseif key == "f" and settings.debug
+    icons.add_icon icons.choose_scp debug: true
+  --elseif key == "c" and settings.debug
+  --  icons.add_icon icons.choose_scp debug: true, id: 26
+
+love.quit = ->
+  if exit_action == "reset_data"
+    love.filesystem.remove "save.txt"
+    if data.cash < 0
+      data.original_cash = data.cash
+      data.cash = 10000
+    if data.danger > 90
+      data.original_danger = data.danger
+      data.danger = 0
+    love.filesystem.write "save.#{os.date "%Y-%m-%d.%H-%M-%S"}.txt", serialize data
+  elseif exit_action == "save_data"
+    save!
+
+  love.filesystem.write "settings.txt", serialize settings
+
+  return
