@@ -7,3 +7,6 @@ builds/*
 !builds/custom_exe/
 tmp/
 src/icons/desktop.ini
+!gource.lua
+out.txt
+log.txt
