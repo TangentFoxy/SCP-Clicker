@@ -24,7 +24,6 @@ end
 
 file:close()
 
--- buffer = buffer:gsub("%|M%|", "%|A%|") -- this is a bad idea
 buffer = buffer:gsub("Paul Liverman III", "Guard13007"):gsub("/Fox %-%-develop", "Guard13007"):gsub("Fox", "Guard13007"):sub(2) .. "\n"
 
 file = io.open('log.txt', 'w')
