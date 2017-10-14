@@ -418,7 +418,7 @@ love.load = ->
     send = love.thread.getChannel "send"
     receive = love.thread.getChannel "receive"
     thread\start!
-    send\push version
+    send\push tostring version
   else
     version_display = pop.text(title_screen, "Current version: #{version}", 16)\align("left", "bottom")\move 2
   align_grid = pop.box(title_screen, {w: icon_size*4+margin*5, h: icon_size*2+margin*3})\align("center", "center")\move nil, 40
