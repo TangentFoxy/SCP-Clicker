@@ -5,6 +5,8 @@ source ./builds/build.number
 ((build++))
 echo "version=\"$version-experimental+$build\"" > ./src/version.lua
 
+# will not be able to auto-add -experimental... :/
+
 git submodule init
 git submodule update
 cd src/lib/pop

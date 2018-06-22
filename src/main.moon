@@ -1,4 +1,4 @@
-require "version"
+version = require "version"
 v = require "lib.semver"
 version = v version
 
