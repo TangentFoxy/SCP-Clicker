@@ -5,7 +5,7 @@ friendlyPackageName="$packageName"
 # Who made this? (Yes, change this to your name.)
 author="Tangent (Rose)"
 # Copyright year (ex 2014-2015 or 2015)
-copyrightYear="2017"
+copyrightYear="2017-2020"
 # A unique identifier for your package.
 # (It should be fine to leave this as its default.)
 identifier="com.$author.$packageName"
