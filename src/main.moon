@@ -1,7 +1,9 @@
 require "version"
 v = require "lib.semver"
 version = v version
-game = { target: "tangentfox/scp-clicker", :version } -- for version check
+game = {
+  target: "tangentfox/scp-clicker", interval: 60*30, :version -- version check
+}
 
 math.randomseed(os.time())
 
