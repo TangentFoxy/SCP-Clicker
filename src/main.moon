@@ -1,6 +1,6 @@
 require "version"
 v = require "lib.semver"
-version = v version
+version = v(version)
 game = {
   target: "tangentfox/scp-clicker", interval: 60*30, :version -- version check
 }
@@ -441,7 +441,7 @@ love.load = ->
 love.update = (dt) ->
   if settings.check_for_updates
     result = itchy\new_version game
-    if result.version and version_display and version_display.parent
+    if result and result.version and version_display and version_display.parent
       latest_version = v(result.version)
       local display_string
       if version == latest_version
