@@ -1,6 +1,7 @@
 require "version"
 v = require "lib.semver"
 version = v version
+game = { target: "tangentfox/scp-clicker", :version } -- for version check
 
 math.randomseed(os.time())
 
@@ -343,12 +344,9 @@ love.load = ->
       version_check_text = pop.text(toggle_version_check, "Enable version checking.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
     toggle_version_check.clicked = (x, y, button) =>
       settings.check_for_updates = not settings.check_for_updates
-      send = love.thread.getChannel "send"
       if settings.check_for_updates
-        send\push "start"
         version_check_text\setText("Disable version checking.")\move icon_size + margin
       else
-        send\push "stop"
         version_check_text\setText("Enable version checking.")\move icon_size + margin
 
     toggle_autosave = pop.icon(options_overlay, {w: icon_size, h: icon_size, icon: "icons/aerial-signal.png", tooltip: ""})\align "center", "center"
@@ -360,7 +358,6 @@ love.load = ->
       autosave_text = pop.text(toggle_autosave, "Enable autosave.", 24)\setColor(255, 255, 255, 255)\align(nil, "center")\move icon_size + margin
     toggle_autosave.clicked = (x, y, button) =>
       settings.autosave = not settings.autosave
-      send = love.thread.getChannel "send"
       if settings.autosave
         autosave_timer = timers.every 60, ->
           save!
@@ -414,11 +411,7 @@ love.load = ->
   pop.text(title_screen, "Click anywhere to begin.", 26)\align("center", "bottom")\move nil, -20
   if settings.check_for_updates
     version_display = pop.text(title_screen, "Current version: #{version} Latest version: Checking for latest version...", 16)\align("left", "bottom")\move 2
-    thread = love.thread.newThread "version-check.lua"
-    send = love.thread.getChannel "send"
-    receive = love.thread.getChannel "receive"
-    thread\start!
-    send\push tostring version
+    itchy\check_version game
   else
     version_display = pop.text(title_screen, "Current version: #{version}", 16)\align("left", "bottom")\move 2
   align_grid = pop.box(title_screen, {w: icon_size*4+margin*5, h: icon_size*2+margin*3})\align("center", "center")\move nil, 40
@@ -445,40 +438,32 @@ love.load = ->
 
 love.update = (dt) ->
   if settings.check_for_updates
-    receive = love.thread.getChannel "receive"
-    if receive\getCount! > 0
-      latest_version = receive\demand!
-      if version_display and version_display.parent
-        local display_string
-        if latest_version != "error"
-          latest_version = v latest_version
-          if version == latest_version and version.build and latest_version.build and version.build == latest_version.build
-            display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
-          elseif version > latest_version or version.build and latest_version.build and version.build > latest_version.build
-            display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
-          else
-            display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
-        else
-          display_string = "Current version: #{version} Latest version: Connection error while getting latest version. Trying again..."
-        version_display\setText(display_string)\move 2
+    result = itchy\new_version game
+    if result.version and version_display and version_display.parent
+      latest_version = v(result.version)
+      local display_string
+      if version == latest_version
+        display_string = "Current version: #{version} Latest version: #{latest_version} You have the latest version. :D"
+      elseif version > latest_version
+        display_string = "Current version: #{version} Latest version: #{latest_version} You have an unreleased version. :O"
       else
-        if latest_version != "error"
-          latest_version = v latest_version
-          if version < latest_version
-            icons.add_icon({
-              id: 0 -- any UI element is "ID" zero
-              trigger: {}
-              icon: "icons/world.png"
-              tooltip: "There is a new version of SCP Clicker available: #{latest_version}\nClick to save, quit, and go to Itch.io.\nRight-click to dismiss."
-              apply: (element) ->
-                element.clicked = (x, y, button) =>
-                  if button == pop.constants.left_mouse
-                    love.system.openURL "https://guard13007.itch.io/scp-clicker"
-                    exit_action = "save_data"
-                    love.event.quit!
-                  elseif button == pop.constants.right_mouse
-                    @delete!
-            })
+        display_string = "Current version: #{version} Latest version: #{latest_version} There is a newer version available!"
+      version_display\setText(display_string)\move 2
+      if version < latest_version
+        icons.add_icon({
+          id: 0 -- any UI element is "ID" zero
+          trigger: {}
+          icon: "icons/world.png"
+          tooltip: "There is a new version of SCP Clicker available: #{latest_version}\nClick to save, quit, and go to Itch.io.\nRight-click to dismiss."
+          apply: (element) ->
+            element.clicked = (x, y, button) =>
+              if button == pop.constants.left_mouse
+                love.system.openURL "https://tangentfox.itch.io/scp-clicker"
+                exit_action = "save_data"
+                love.event.quit!
+              elseif button == pop.constants.right_mouse
+                @delete!
+        })
 
   if state.paused
     -- find and delete click elements!
