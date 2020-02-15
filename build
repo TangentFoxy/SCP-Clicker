@@ -36,8 +36,8 @@ rm -rf ./tmp/src/lib/pop/lib/inspect
 source ./lp-config.sh
 echo "build=$build" > "$outputDir/build.number"
 
-butler push "$outputDir/$packageName-${version}_win32.zip" guard13007/scp-clicker:experimental-win32 --userversion ${version}
-butler push "$outputDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:experimental-osx --userversion ${version}
-butler push "$outputDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:experimental-linux --userversion ${version}
+butler push "$outputDir/$packageName-${version}_win32.zip" tangentfox/scp-clicker:experimental-win32 --userversion ${version}
+butler push "$outputDir/$packageName-${version}_osx.zip" tangentfox/scp-clicker:experimental-osx --userversion ${version}
+butler push "$outputDir/$packageName-${version}_linux.zip" tangentfox/scp-clicker:experimental-linux --userversion ${version}
 
-#butler status guard13007/scp-clicker
+#butler status tangentfox/scp-clicker

@@ -3,7 +3,7 @@ packageName="SCP-Clicker"
 # User-friendly package name.
 friendlyPackageName="$packageName"
 # Who made this? (Yes, change this to your name.)
-author="Guard13007"
+author="Tangent (Rose)"
 # Copyright year (ex 2014-2015 or 2015)
 copyrightYear="2017"
 # A unique identifier for your package.

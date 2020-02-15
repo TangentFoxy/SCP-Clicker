@@ -3,7 +3,7 @@
 source ./version.sh
 source ./builds/build.number
 ((build++))
-echo "version=\"$version+$build\"" > ./src/version.lua
+echo "version=\"$version\"" > ./src/version.lua
 
 git submodule init
 git submodule update
@@ -36,8 +36,8 @@ rm -rf ./tmp/src/lib/pop/lib/inspect
 source ./lp-config.sh
 echo "build=$build" > "$outputDir/build.number"
 
-butler push "$outputDir/$packageName-${version}_win32.zip" guard13007/scp-clicker:win32 --userversion ${version}
-butler push "$outputDir/$packageName-${version}_osx.zip" guard13007/scp-clicker:osx --userversion ${version}
-butler push "$outputDir/$packageName-${version}_linux.zip" guard13007/scp-clicker:linux --userversion ${version}
+butler push "$outputDir/$packageName-${version}_win32.zip" tangentfox/scp-clicker:win32 --userversion ${version}
+butler push "$outputDir/$packageName-${version}_osx.zip" tangentfox/scp-clicker:osx --userversion ${version}
+butler push "$outputDir/$packageName-${version}_linux.zip" tangentfox/scp-clicker:linux --userversion ${version}
 
-#butler status guard13007/scp-clicker
+#butler status tangentfox/scp-clicker

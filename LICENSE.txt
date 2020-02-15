@@ -8,7 +8,8 @@ Libraries:
 
 All are available under the terms of the MIT license:
 
-- Pop.Box: https://github.com/Guard13007/Pop.Box
+- Pop.Box: https://github.com/TangentFoxy/Pop.Box
+- itchy: https://github.com/TangentFoxy/itchy
 - cron.lua: https://github.com/kikito/cron.lua
 - json.lua: https://github.com/rxi/json.lua
 - Lume: https://github.com/rxi/lume
